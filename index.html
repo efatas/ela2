@@ -1,0 +1,1909 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Shrinking Contract</title>
+<meta name="description" content="ELA #2 classroom bargaining game: a Firm and its Supplier split a contract surplus that shrinks with every rejection.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23121a26'/%3E%3Crect x='6' y='8' width='20' height='6' rx='1.5' fill='%236ea4ee'/%3E%3Crect x='6' y='18' width='14' height='6' rx='1.5' fill='%23eba45c'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: a negotiating table. Firm on the left, Supplier on the right, and between them
+   the contract's surplus drawn as a bar that loses 10% each time a proposal is rejected. */
+:root {
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --surface-2: #f5f7fa;
+  --ink: #121a26;
+  --muted: #586374;
+  --line: #d2d8e1;
+  --line-strong: #aeb8c6;
+  --firm: #1f5aa6;
+  --firm-soft: #dde8f7;
+  --firm-ink: #ffffff;
+  --sup: #a6560b;
+  --sup-soft: #f7e7d4;
+  --sup-ink: #ffffff;
+  --lost: #8c96a6;
+  --ok: #1d7a4c;
+  --ok-soft: #dcf1e5;
+  --bad: #b3332b;
+  --bad-soft: #f8e1df;
+  --warn: #9a6200;
+  --shadow: 0 1px 2px rgba(18, 26, 38, .06), 0 4px 16px rgba(18, 26, 38, .06);
+  --font-ui: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r: 10px;
+  --step--1: .875rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.5rem;
+  --step-3: 2rem;
+  --step-4: 2.75rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #151c26; --surface-2: #1b2431; --ink: #e8edf4; --muted: #9ba7b9;
+    --line: #2a3546; --line-strong: #43516a; --firm: #6ea4ee; --firm-soft: #1b2d48; --firm-ink: #0b1220;
+    --sup: #eba45c; --sup-soft: #3b2a17; --sup-ink: #1a1006; --lost: #6c7789; --ok: #4dc48b; --ok-soft: #133024;
+    --bad: #f1817a; --bad-soft: #3a1a18; --warn: #e6b450;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #151c26; --surface-2: #1b2431; --ink: #e8edf4; --muted: #9ba7b9;
+  --line: #2a3546; --line-strong: #43516a; --firm: #6ea4ee; --firm-soft: #1b2d48; --firm-ink: #0b1220;
+  --sup: #eba45c; --sup-soft: #3b2a17; --sup-ink: #1a1006; --lost: #6c7789; --ok: #4dc48b; --ok-soft: #133024;
+  --bad: #f1817a; --bad-soft: #3a1a18; --warn: #e6b450;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 16px; line-height: 1.5;
+  margin: 0;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { font-stretch: 112%; line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+.num, .money { font-family: var(--font-num); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.eyebrow { font-size: var(--step--1); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+.small { font-size: var(--step--1); }
+a { color: var(--firm); }
+:focus-visible { outline: 3px solid var(--firm); outline-offset: 2px; border-radius: 4px; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; }
+.narrow { max-width: 620px; }
+.stack { display: grid; gap: 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.spread { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; min-width: 0; }
+.panel.flat { box-shadow: none; }
+.panel h2 { font-size: var(--step-1); margin-bottom: 4px; }
+
+/* buttons */
+.btn {
+  appearance: none; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+  border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; line-height: 1.2; min-height: 44px;
+  display: inline-flex; align-items: center; gap: 8px; justify-content: center; text-decoration: none;
+}
+.btn:hover { background: var(--surface-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.btn.primary:hover { filter: brightness(1.15); }
+.btn.firm { background: var(--firm); border-color: var(--firm); color: var(--firm-ink); }
+.btn.sup { background: var(--sup); border-color: var(--sup); color: var(--sup-ink); }
+.btn.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.btn.bad { background: var(--surface); border-color: var(--bad); color: var(--bad); }
+.btn.ghost { background: transparent; border-color: transparent; }
+.btn.ghost:hover { background: var(--surface-2); }
+.btn.sm { min-height: 34px; padding: 6px 10px; font-size: var(--step--1); }
+.btn.big { min-height: 56px; font-size: var(--step-1); padding: 14px 22px; }
+.btn.wide { width: 100%; }
+
+/* chips */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 3px 10px; font-size: var(--step--1);
+  font-weight: 600; border: 1px solid var(--line); background: var(--surface-2); white-space: nowrap;
+}
+.chip.firm { background: var(--firm-soft); border-color: transparent; color: var(--firm); }
+.chip.sup { background: var(--sup-soft); border-color: transparent; color: var(--sup); }
+.chip.ok { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
+.chip.bad { background: var(--bad-soft); border-color: transparent; color: var(--bad); }
+.chip.warn { color: var(--warn); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+/* forms */
+label.field { display: grid; gap: 6px; font-weight: 600; font-size: var(--step--1); }
+label.field .hint { font-weight: 400; color: var(--muted); }
+input[type="text"], input[type="number"], input[type="url"], textarea, select {
+  width: 100%; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 8px; padding: 10px 12px;
+  min-height: 44px;
+}
+textarea { min-height: 120px; font-family: var(--font-num); font-size: 13px; }
+.radio-cards { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.radio-card { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; border: 1px solid var(--line-strong); border-radius: 10px; padding: 14px; cursor: pointer; background: var(--surface); }
+.radio-card input { margin-top: 4px; }
+.radio-card b { font-size: var(--step-0); }
+.radio-card span { grid-column: 2; color: var(--muted); font-size: var(--step--1); }
+.radio-card:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.grid2 { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.msg { padding: 10px 12px; border-radius: 8px; font-size: var(--step--1); }
+.msg.ok { background: var(--ok-soft); color: var(--ok); }
+.msg.bad { background: var(--bad-soft); color: var(--bad); }
+.msg.info { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+
+/* landing */
+.landing { display: grid; gap: 28px; padding-block: 28px; }
+.landing h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 800; letter-spacing: -.02em; }
+.lede { font-size: var(--step-1); color: var(--muted); max-width: 60ch; }
+.choices { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.choice {
+  text-align: left; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 12px; padding: 20px;
+  cursor: pointer; display: grid; gap: 4px; font-size: var(--step-1); font-weight: 700; font-stretch: 108%;
+}
+.choice span { font-size: var(--step--1); font-weight: 400; color: var(--muted); font-stretch: 100%; }
+.choice:hover { border-color: var(--ink); }
+
+/* the shrinking surplus schedule */
+.schedule { display: grid; gap: 6px; }
+.sched-row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr) 7.2rem; gap: 10px; align-items: center; }
+.sched-row .lbl { font-size: var(--step--1); color: var(--muted); font-weight: 600; }
+.sched-row .val { text-align: right; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 500; }
+.sched-row.now .lbl, .sched-row.now .val { color: var(--ink); font-weight: 700; }
+.sched-row.past { opacity: .55; }
+.track {
+  position: relative; height: 24px; border-radius: 5px; overflow: hidden;
+  background: repeating-linear-gradient(135deg, var(--line) 0 5px, transparent 5px 10px);
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--lost) 38%, transparent) 0 5px, transparent 5px 10px);
+  border: 1px solid var(--line);
+}
+.track > .fill { position: absolute; inset: 0 auto 0 0; display: flex; }
+.track .seg { height: 100%; }
+.track .seg.firm { background: var(--firm); }
+.track .seg.sup { background: var(--sup); }
+.track .seg.pie { background: var(--line-strong); }
+.track .seg.pie.firm-turn { background: var(--firm-soft); background: color-mix(in srgb, var(--firm) 45%, var(--surface)); }
+.track .seg.pie.sup-turn { background: var(--sup-soft); background: color-mix(in srgb, var(--sup) 45%, var(--surface)); }
+.schedule .track .seg.pie.firm-turn { background: var(--firm); }
+.schedule .track .seg.pie.sup-turn { background: var(--sup); }
+.who { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.who.firm { color: var(--firm); }
+.who.sup { color: var(--sup); }
+.rw { font-weight: 700; }
+.rw.firm { color: var(--firm); }
+.rw.sup { color: var(--sup); }
+.sched-row .lbl .who-sm { display: none; }
+.chart .halo { paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+
+/* console chrome */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px); border-bottom: 1px solid var(--line);
+}
+.topbar .inner { max-width: 1180px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.brandmark { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brandmark b { font-size: var(--step-1); font-stretch: 115%; font-weight: 800; white-space: nowrap; }
+.brandmark .code { font-family: var(--font-num); font-weight: 600; letter-spacing: .08em; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
+.tab { border: 0; background: transparent; padding: 8px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--muted); min-height: 40px; }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.tab:hover:not([aria-selected="true"]) { background: var(--surface-2); color: var(--ink); }
+.tools { display: flex; gap: 6px; align-items: center; }
+.banner { background: var(--bad-soft); color: var(--bad); padding: 10px 16px; text-align: center; font-weight: 600; }
+.banner .btn { margin-left: 10px; }
+
+/* board */
+.gamehead { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.gamehead h2 { font-size: var(--step-3); font-weight: 800; }
+.lanes { display: grid; gap: 14px; }
+.lane {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px;
+  display: grid; grid-template-columns: 9.5rem minmax(0, 1fr) 9.5rem; gap: 18px; align-items: center;
+}
+.party { display: grid; gap: 2px; }
+.party b { font-size: var(--step-2); font-stretch: 110%; line-height: 1.1; overflow-wrap: anywhere; }
+.party.right { text-align: right; }
+.party .earn { font-family: var(--font-num); font-size: var(--step--1); color: var(--muted); }
+.mid { display: grid; gap: 10px; min-width: 0; }
+.status-line { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between; }
+.status-line .what { font-weight: 700; font-size: var(--step-1); }
+.status-line .clock { font-family: var(--font-num); color: var(--muted); }
+.status-line .clock.late { color: var(--warn); font-weight: 600; }
+.lane .track { height: 34px; border-radius: 7px; }
+.track .tag { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--font-num); font-size: 12px; font-weight: 600; padding: 0 8px; white-space: nowrap; }
+.track .tag.firm { color: var(--firm-ink); }
+.track .tag.sup { color: var(--sup-ink); }
+.schedule .track .tag { font-family: var(--font-ui); text-transform: uppercase; letter-spacing: .05em; font-size: 11px; }
+.steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.steps li { font-family: var(--font-num); font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.steps li.rej { text-decoration: line-through; }
+.steps li.cur { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+.steps li.acc { background: var(--ok-soft); border-color: transparent; color: var(--ok); font-weight: 600; }
+.steps li.fail { background: var(--bad-soft); border-color: transparent; color: var(--bad); font-weight: 600; }
+.outcome { font-weight: 700; }
+.outcome.deal { color: var(--ok); }
+.outcome.nodeal { color: var(--bad); }
+.manual { border-top: 1px dashed var(--line); padding-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.manual label { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.manual input { width: 9rem; min-height: 38px; padding: 6px 10px; }
+.present .ctl { display: none !important; }
+.present .lane { padding: 20px; }
+.present .party b { font-size: var(--step-3); }
+
+/* join */
+.joingrid { display: grid; gap: 20px; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; }
+.qr { background: #fff; border-radius: 12px; padding: 14px; border: 1px solid var(--line); }
+.qr svg { width: 100%; height: auto; display: block; }
+.bigcode { font-family: var(--font-num); font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 600; letter-spacing: .14em; }
+.linkbox { font-family: var(--font-num); font-size: 14px; overflow-wrap: anywhere; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.teamgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.teamcard { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); display: grid; gap: 6px; }
+.teamcard .name { font-weight: 700; font-size: var(--step-1); font-stretch: 108%; }
+.teamcard.on { border-color: var(--ok); }
+
+/* tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--surface-2); }
+td.n, th.n { text-align: right; }
+td.n { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; }
+tr.reveal td { animation: fadein .35s ease both; }
+tr.pending td { color: transparent; }
+tr.pending td:first-child, tr.pending td:nth-child(2), tr.pending td:nth-child(3) { color: var(--ink); }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* stats */
+.stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); display: grid; gap: 2px; }
+.stat .v { font-family: var(--font-num); font-size: var(--step-2); font-weight: 600; }
+.stat .k { font-size: var(--step--1); color: var(--muted); }
+.chart { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--ink); font-family: var(--font-ui); }
+.chart .mut { fill: var(--muted); }
+.chart .grid { stroke: var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: var(--step--1); color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+
+/* rules card */
+.rules { display: grid; gap: 18px; }
+.rules ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+.rules li::marker { font-weight: 700; color: var(--muted); }
+.present .rules { font-size: 1.25rem; }
+
+/* team (phone) */
+.team { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 14px; }
+.teamhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.teamhead h1 { font-size: var(--step-3); font-weight: 800; }
+.rolebar { border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.rolebar.firm { background: var(--firm); color: var(--firm-ink); }
+.rolebar.sup { background: var(--sup); color: var(--sup-ink); }
+.rolebar .big { font-size: var(--step-2); font-weight: 800; font-stretch: 112%; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.card h2 { font-size: var(--step-2); font-weight: 800; }
+.split-in { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.split-in label { display: grid; gap: 6px; font-weight: 700; font-size: var(--step--1); }
+.split-in label.firm { color: var(--firm); }
+.split-in label.sup { color: var(--sup); }
+.split-in input { font-family: var(--font-num); font-size: var(--step-1); font-weight: 600; }
+input[type="range"] { width: 100%; accent-color: var(--ink); }
+.offerline { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.offerline > div { border-radius: 10px; padding: 10px 12px; display: grid; gap: 0; }
+.offerline .f { background: var(--firm-soft); color: var(--firm); }
+.offerline .s { background: var(--sup-soft); color: var(--sup); }
+.offerline .k { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.offerline .v { font-family: var(--font-num); font-size: var(--step-2); font-weight: 600; }
+.ifreject { font-size: var(--step--1); color: var(--muted); border-left: 3px solid var(--line-strong); padding-left: 10px; }
+.ifreject.final { border-color: var(--bad); color: var(--bad); }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hist li { display: grid; grid-template-columns: 2.4rem 1fr auto; gap: 8px; font-size: var(--step--1); align-items: baseline; }
+.hist .r { font-family: var(--font-num); color: var(--muted); }
+.wait { display: flex; align-items: center; gap: 12px; }
+.pulse { width: 12px; height: 12px; border-radius: 50%; background: var(--muted); animation: pulse 1.4s ease-in-out infinite; flex: none; }
+@keyframes pulse { 0%, 100% { opacity: .25; transform: scale(.85); } 50% { opacity: 1; transform: scale(1); } }
+.picker { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pick { border: 1px solid var(--line-strong); border-radius: 12px; padding: 16px 12px; background: var(--surface); cursor: pointer; display: grid; gap: 4px; text-align: left; }
+.pick b { font-size: var(--step-1); font-stretch: 110%; }
+.pick:disabled { opacity: .5; cursor: not-allowed; }
+.footer { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: space-between; align-items: center; font-size: var(--step--1); color: var(--muted); }
+
+/* toast + modal */
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; z-index: 50; max-width: calc(100% - 32px); box-shadow: var(--shadow); font-weight: 600; }
+.modal { position: fixed; inset: 0; background: rgba(10, 14, 20, .55); z-index: 40; display: grid; place-items: center; padding: 16px; }
+.modal .box { background: var(--surface); border-radius: 14px; padding: 22px; max-width: 520px; width: 100%; display: grid; gap: 14px; max-height: calc(100vh - 32px); overflow: auto; box-shadow: var(--shadow); }
+
+@media (max-width: 560px) {
+  .sched-row { grid-template-columns: 4.8rem minmax(0, 1fr) 6.2rem; }
+  .schedule .track .tag { display: none; }
+  .sched-row .lbl .who-sm { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; line-height: 1.1; }
+  .sched-row .lbl .who-sm.firm { color: var(--firm); }
+  .sched-row .lbl .who-sm.sup { color: var(--sup); }
+}
+@media (max-width: 760px) {
+  .lane { grid-template-columns: 1fr 1fr; }
+  .lane .mid { grid-column: 1 / -1; grid-row: 2; }
+  .party.right { text-align: right; }
+  .joingrid { grid-template-columns: 1fr; }
+  .tabs { margin-left: 0; width: 100%; overflow-x: auto; flex-wrap: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<div id="app" class="app"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="modal" class="modal" hidden></div>
+<noscript><p style="padding:16px">This page needs JavaScript.</p></noscript>
+<script>
+/* QR Code Generator for JavaScript, (c) 2009 Kazuhiko Arase, MIT licence. https://github.com/kazuhikoarase/qrcode-generator */
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+</script>
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ config */
+  var CFG = Object.assign({ databaseURL: '', basePath: 'ela2' }, window.ELA2_CONFIG || {});
+  var IN_VIEWER = !!(window.claude && typeof window.claude.use === 'function');
+  var FILE_PAGE = location.protocol === 'file:';
+  var app = document.getElementById('app');
+  function now() { return Date.now(); }
+
+  /* ----------------------------------------------------------------- helpers */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  var LS = {
+    get: function (k) { try { var v = localStorage.getItem(k); return v == null ? null : JSON.parse(v); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+  };
+  var ALPH = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function rid(n) {
+    var b = new Uint32Array(n); window.crypto.getRandomValues(b);
+    var s = ''; for (var i = 0; i < n; i++) s += ALPH[b[i] % ALPH.length]; return s;
+  }
+  var DEV = null;
+  function deviceId() {
+    if (DEV) return DEV;
+    DEV = LS.get('ela2.dev');
+    if (!DEV) { DEV = 'D' + rid(10); LS.set('ela2.dev', DEV); }
+    return DEV;
+  }
+  var F0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  var F2 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function money(c) {
+    if (c == null || isNaN(c)) return '—';
+    c = Math.round(c);
+    return (c % 100 === 0 ? F0 : F2).format(c / 100);
+  }
+  function plain(c) { c = Math.round(c); return c % 100 === 0 ? String(c / 100) : (c / 100).toFixed(2); }
+  function parseMoney(s) {
+    s = String(s == null ? '' : s).replace(/[$\s,]/g, '');
+    if (!/^\d+(\.\d{1,2})?$/.test(s)) return NaN;
+    var parts = s.split('.');
+    return parseInt(parts[0], 10) * 100 + (parts[1] ? parseInt((parts[1] + '00').slice(0, 2), 10) : 0);
+  }
+  function pct(x) { var v = Math.round(x * 10) / 10; return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(1)) + '%'; }
+  function clock(ms) { var s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+  function roleName(role) { return role === 'firm' ? 'Firm' : 'Supplier'; }
+  function roleCls(role) { return role === 'firm' ? 'firm' : 'sup'; }
+  function listAnd(a) {
+    if (a.length <= 1) return a.join('');
+    return a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+  }
+  function hhmm(t) { var d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+  /* ------------------------------------------------------------------ engine */
+  var E = {
+    pie: function (p, r) { return Math.round(p.pie * Math.pow(1 - p.shrink / 100, r - 1)); },
+    proposer: function (p, r) { var firmFirst = p.first !== 'supplier'; return ((r % 2 === 1) === firmFirst) ? 'firm' : 'supplier'; },
+    other: function (role) { return role === 'firm' ? 'supplier' : 'firm'; },
+    roundsOf: function (p, role) { var a = []; for (var r = 1; r <= p.rounds; r++) if (E.proposer(p, r) === role) a.push(r); return a; },
+    /* Game k pairs every odd-numbered team with an even-numbered one; roles alternate between games
+       and nobody meets the same partner twice until every partner has been met. */
+    pairings: function (n, k) {
+      var O = [], V = [], out = [];
+      for (var t = 1; t <= n; t++) (t % 2 ? O : V).push(t);
+      var m = O.length;
+      for (var i = 0; i < m; i++) {
+        var o = O[i], e = V[(i + k) % m];
+        out.push(k % 2 === 0 ? { firm: o, supplier: e } : { firm: e, supplier: o });
+      }
+      return out.sort(function (a, b) { return a.firm - b.firm; });
+    },
+    spe: function (p) {
+      var T = p.rounds, pies = [], keep = [];
+      for (var r = 1; r <= T; r++) pies.push(E.pie(p, r));
+      keep[T - 1] = pies[T - 1];
+      for (var t = T - 2; t >= 0; t--) keep[t] = pies[t] - keep[t + 1];
+      return pies.map(function (pie, t) { return { r: t + 1, pie: pie, proposer: E.proposer(p, t + 1), keep: keep[t], give: pie - keep[t] }; });
+    },
+    /* share of the surplus kept by whoever proposes first, as a fraction */
+    firstShare: function (T, shrink) { var d = 1 - shrink / 100; return (1 - Math.pow(-d, T)) / (1 + d); },
+    newSession: function (o) {
+      var teams = [];
+      for (var i = 0; i < o.n; i++) teams.push({ id: i + 1, name: (o.names && o.names[i]) || ('Team ' + (i + 1)), dev: '', devAt: 0, seen: 0 });
+      return {
+        app: 'ela2', v: 1, sid: o.sid, mode: o.mode, db: o.db || '', rev: 1, at: now(), created: now(), cid: o.cid,
+        teams: teams, params: Object.assign({}, o.params), stakes: o.stakes || '', games: [], cur: -1, lastKey: '', log: []
+      };
+    },
+    startGame: function (st) {
+      var k = st.games.length, t = now();
+      var negs = E.pairings(st.teams.length, k).map(function (pr, i) {
+        return { i: i, firm: pr.firm, supplier: pr.supplier, round: 1, phase: 'propose', since: t, hist: [], out: null };
+      });
+      st.games.push({ k: k, params: Object.assign({}, st.params), status: 'live', t0: t, t1: 0, negs: negs });
+      st.cur = k;
+      return null;
+    },
+    teamOf: function (N, role) { return role === 'firm' ? N.firm : N.supplier; },
+    find: function (G, team) {
+      if (!G) return null;
+      for (var j = 0; j < G.negs.length; j++) {
+        var N = G.negs[j];
+        if (N.firm === team) return { N: N, role: 'firm' };
+        if (N.supplier === team) return { N: N, role: 'supplier' };
+      }
+      return null;
+    },
+    ended: function (N) { return N.phase === 'deal' || N.phase === 'nodeal'; },
+    offer: function (st, g, i, r, team, sup, src) {
+      var G = st.games[g];
+      if (!G || g !== st.cur || G.status !== 'live') return 'That game is not running.';
+      var N = G.negs[i];
+      if (!N) return 'Unknown negotiation.';
+      if (N.phase !== 'propose' || N.round !== r) return 'No proposal is expected there right now.';
+      var role = E.proposer(G.params, r);
+      if (team != null && E.teamOf(N, role) !== team) return 'It is not that team’s turn to propose.';
+      var pie = E.pie(G.params, r);
+      if (typeof sup !== 'number' || !isFinite(sup) || Math.round(sup) !== sup || sup < 0 || sup > pie) return 'The two shares must add up to ' + money(pie) + '.';
+      var t = now();
+      N.hist.push({ r: r, pie: pie, by: role, sup: sup, firm: pie - sup, tO: t, wO: t - N.since, src: src || 'team', resp: '', tR: 0, wR: 0, rsrc: '' });
+      N.phase = 'respond'; N.since = t;
+      return null;
+    },
+    respond: function (st, g, i, r, team, accept, src) {
+      var G = st.games[g];
+      if (!G || g !== st.cur || G.status !== 'live') return 'That game is not running.';
+      var N = G.negs[i];
+      if (!N) return 'Unknown negotiation.';
+      if (N.phase !== 'respond' || N.round !== r) return 'No answer is expected there right now.';
+      var role = E.other(E.proposer(G.params, r));
+      if (team != null && E.teamOf(N, role) !== team) return 'It is not that team’s turn to answer.';
+      var h = N.hist[N.hist.length - 1], t = now();
+      h.resp = accept ? 'accept' : 'reject'; h.tR = t; h.wR = t - N.since; h.rsrc = src || 'team';
+      if (accept) { N.phase = 'deal'; N.out = { r: r, firm: h.firm, sup: h.sup }; }
+      else if (r >= G.params.rounds) { N.phase = 'nodeal'; N.out = { r: r, firm: 0, sup: 0 }; }
+      else { N.round = r + 1; N.phase = 'propose'; }
+      N.since = t;
+      if (G.negs.every(E.ended)) { G.status = 'done'; G.t1 = t; }
+      return null;
+    },
+    earnings: function (st, team) {
+      var s = 0;
+      st.games.forEach(function (G) {
+        G.negs.forEach(function (N) {
+          if (!N.out) return;
+          if (N.firm === team) s += N.out.firm; else if (N.supplier === team) s += N.out.sup;
+        });
+      });
+      return s;
+    }
+  };
+
+  /* --------------------------------------------- Firebase Realtime Database (REST) */
+  function HttpError(status) { var e = new Error('HTTP ' + status); e.status = status; return e; }
+  var RT = {
+    norm: function (u) {
+      u = String(u || '').trim();
+      if (!u) return '';
+      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+      try { var x = new URL(u); return x.origin; } catch (e) { return ''; }
+    },
+    url: function (base, path, q) { return base + '/' + path + '.json' + (q ? '?' + q : ''); },
+    put: function (base, path, val) {
+      return fetch(RT.url(base, path, 'print=silent'), { method: 'PUT', body: JSON.stringify(val), cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw HttpError(r.status); });
+    },
+    post: function (base, path, val) {
+      return fetch(RT.url(base, path), { method: 'POST', body: JSON.stringify(val), cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw HttpError(r.status); return r.json(); })
+        .then(function (j) { return j && j.name; });
+    },
+    get: function (base, path) {
+      return fetch(RT.url(base, path), { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw HttpError(r.status); return r.json(); });
+    },
+    del: function (base, path) {
+      return fetch(RT.url(base, path, 'print=silent'), { method: 'DELETE', cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw HttpError(r.status); });
+    },
+    setAt: function (root, path, value) {
+      var parts = String(path || '/').split('/').filter(Boolean);
+      if (!parts.length) return value == null ? null : value;
+      if (!root || typeof root !== 'object') root = {};
+      var o = root;
+      for (var j = 0; j < parts.length - 1; j++) {
+        if (!o[parts[j]] || typeof o[parts[j]] !== 'object') o[parts[j]] = {};
+        o = o[parts[j]];
+      }
+      if (value == null) delete o[parts[parts.length - 1]]; else o[parts[parts.length - 1]] = value;
+      return root;
+    },
+    /* Streams a location with Server-Sent Events, the way the Firebase REST API documents it. */
+    listen: function (base, path, onData, onStatus) {
+      var es = null, data = null, closed = false, tries = 0, timer = null;
+      function open() {
+        if (closed) return;
+        try { es = new EventSource(RT.url(base, path)); } catch (e) { onStatus && onStatus('error'); return; }
+        es.onopen = function () { tries = 0; onStatus && onStatus('open'); };
+        es.addEventListener('put', function (ev) {
+          var m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+          data = RT.setAt(data, m.path, m.data); onData(data);
+        });
+        es.addEventListener('patch', function (ev) {
+          var m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+          var p = m.path === '/' ? '' : m.path;
+          Object.keys(m.data || {}).forEach(function (k) { data = RT.setAt(data, p + '/' + k, m.data[k]); });
+          onData(data);
+        });
+        es.addEventListener('cancel', function () { onStatus && onStatus('denied'); });
+        es.addEventListener('auth_revoked', function () { onStatus && onStatus('denied'); });
+        es.onerror = function () {
+          if (closed) return;
+          if (es.readyState === 2) {
+            onStatus && onStatus('retrying');
+            clearTimeout(timer);
+            timer = setTimeout(open, Math.min(10000, 800 * Math.pow(2, tries++)));
+          } else {
+            onStatus && onStatus('retrying');
+          }
+        };
+      }
+      open();
+      return { close: function () { closed = true; clearTimeout(timer); if (es) es.close(); } };
+    }
+  };
+  function netErrorText(e) {
+    if (e && e.status === 401 || e && e.status === 403) return 'The database refused access. Open its Rules tab, paste the rules from the guide and click Publish.';
+    if (e && e.status === 404) return 'There is no database at that address. Copy it again from the Data tab of your Realtime Database.';
+    if (e && e.status) return 'The database answered with an error (' + e.status + ').';
+    return 'Could not reach that address. Check it is the database URL (it ends in firebasedatabase.app or firebaseio.com) and that this computer is online.';
+  }
+
+  /* ----------------------------------------------------------------- QR code */
+  function qrSVG(text) {
+    try {
+      var q = qrcode(0, 'M'); q.addData(text); q.make();
+      var n = q.getModuleCount(), d = '';
+      for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (q.isDark(r, c)) d += 'M' + c + ' ' + r + 'h1v1h-1z';
+      return '<svg viewBox="-2 -2 ' + (n + 4) + ' ' + (n + 4) + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="QR code for the team link" shape-rendering="crispEdges">' +
+        '<rect x="-2" y="-2" width="' + (n + 4) + '" height="' + (n + 4) + '" fill="#ffffff"/><path d="' + d + '" fill="#000000"/></svg>';
+    } catch (e) { return ''; }
+  }
+
+  /* ---------------------------------------------------------- shared UI bits */
+  var toastTimer = null;
+  function toast(msg, ms) {
+    var el = document.getElementById('toast');
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; }, ms || 2600);
+  }
+  var modalHandler = null;
+  function openModal(html, handler) {
+    var m = document.getElementById('modal');
+    m.innerHTML = '<div class="box" role="dialog" aria-modal="true">' + html + '</div>';
+    m.hidden = false; modalHandler = handler || null;
+    var f = m.querySelector('[autofocus]') || m.querySelector('button, input');
+    if (f) f.focus();
+  }
+  function closeModal() { var m = document.getElementById('modal'); m.hidden = true; m.innerHTML = ''; modalHandler = null; }
+  document.getElementById('modal').addEventListener('click', function (ev) {
+    if (ev.target.id === 'modal') return closeModal();
+    var b = ev.target.closest('[data-m]');
+    if (!b) return;
+    var act = b.getAttribute('data-m');
+    if (act === 'close') return closeModal();
+    if (modalHandler) modalHandler(act, b, document.getElementById('modal'));
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && !document.getElementById('modal').hidden) closeModal();
+  });
+
+  var Theme = {
+    init: function () { var t = LS.get('ela2.theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); },
+    cycle: function () {
+      var cur = document.documentElement.getAttribute('data-theme');
+      var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var next = dark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next); LS.set('ela2.theme', next);
+      return next;
+    }
+  };
+
+  /* the surplus schedule, one bar per round, drawn to scale */
+  function scheduleHTML(p, cur, rejectedUpTo) {
+    var rows = '';
+    for (var r = 1; r <= p.rounds; r++) {
+      var pie = E.pie(p, r), w = 100 * pie / p.pie, role = E.proposer(p, r);
+      var cls = r === cur ? 'now' : (rejectedUpTo && r <= rejectedUpTo ? 'past' : '');
+      rows += '<div class="sched-row ' + cls + '"><span class="lbl">Round ' + r + '<span class="who-sm ' + roleCls(role) + '">' + roleName(role) + '</span></span>' +
+        '<div class="track" aria-hidden="true"><div class="fill" style="width:' + w.toFixed(3) + '%"><div class="seg pie ' + (role === 'firm' ? 'firm-turn' : 'sup-turn') + '" style="width:100%"></div></div>' +
+        '<span class="tag ' + roleCls(role) + '" style="left:0">' + roleName(role) + ' proposes</span></div>' +
+        '<span class="val">' + money(pie) + '</span></div>';
+    }
+    rows += '<div class="sched-row"><span class="lbl">No deal</span><div class="track" aria-hidden="true"></div><span class="val">$0</span></div>';
+    return '<div class="schedule" role="table" aria-label="Surplus in each round">' + rows + '</div>';
+  }
+
+  function rulesHTML(p, stakes, gameNo) {
+    var first = E.proposer(p, 1), second = E.other(first);
+    var fr = E.roundsOf(p, first), sr = E.roundsOf(p, second);
+    var pie2 = E.pie(p, 2);
+    return '<div class="rules">' +
+      '<div><p class="eyebrow">ELA #2 · Bargaining power' + (gameNo ? ' · Game ' + gameNo : '') + '</p><h2 style="font-size:var(--step-3);font-weight:800">The Shrinking Contract</h2></div>' +
+      '<p>A Firm and its key Supplier must agree how to split the surplus of a contract: <b class="money">' + money(p.pie) + '</b>. Each team plays one side.</p>' +
+      '<ol>' +
+      '<li>In round 1 the <b class="rw ' + roleCls(first) + '">' + roleName(first) + '</b> proposes a split: how much goes to the Firm and how much to the Supplier.</li>' +
+      '<li>The <b class="rw ' + roleCls(second) + '">' + roleName(second) + '</b> accepts or rejects. If it accepts, the contract is signed and each side gets its share.</li>' +
+      '<li>If it rejects, a week is lost. The surplus shrinks by ' + p.shrink + '% (to ' + money(pie2) + ' in round 2) and the ' + roleName(second) + ' makes the next proposal.</li>' +
+      '<li>Proposals alternate: the ' + roleName(first) + ' proposes in round' + (fr.length > 1 ? 's ' : ' ') + listAnd(fr) + (sr.length ? '; the ' + roleName(second) + ' in round' + (sr.length > 1 ? 's ' : ' ') + listAnd(sr) : '') + '.</li>' +
+      '<li>If the proposal in round ' + p.rounds + ' is rejected, there is no contract and both sides get $0.</li>' +
+      '</ol>' +
+      '<p class="muted">Teams talk only through proposals: no messages and no side deals.</p>' +
+      (stakes ? '<p><b>Stakes.</b> ' + esc(stakes) + '</p>' : '') +
+      scheduleHTML(p, 0, 0) +
+      '</div>';
+  }
+
+  /* split bar for one negotiation; widths are shares of the original surplus */
+  function laneTrack(G, N, show) {
+    var p = G.params, base = p.pie;
+    var inner = '', tags = '';
+    function seg(cls, c) { return '<div class="seg ' + cls + '" style="width:' + (100 * c / base).toFixed(3) + '%"></div>'; }
+    function tag(cls, text, leftPct, rightAlign) {
+      return '<span class="tag ' + cls + '" style="' + (rightAlign ? 'right:' + (100 - leftPct).toFixed(2) + '%' : 'left:' + leftPct.toFixed(2) + '%') + '">' + text + '</span>';
+    }
+    if (N.out) {
+      if (N.phase === 'deal' && show) {
+        inner = seg('firm', N.out.firm) + seg('sup', N.out.sup);
+        if (N.out.firm / base > .16) tags += tag('firm', money(N.out.firm), 0);
+        if (N.out.sup / base > .16) tags += tag('sup', money(N.out.sup), 100 * (N.out.firm + N.out.sup) / base, true);
+      } else if (N.phase === 'deal') {
+        inner = seg('pie', E.pie(p, N.out.r));
+      }
+    } else {
+      var pie = E.pie(p, N.round), last = N.hist[N.hist.length - 1];
+      if (N.phase === 'respond' && show && last) {
+        inner = seg('firm', last.firm) + seg('sup', last.sup);
+        if (last.firm / base > .16) tags += tag('firm', money(last.firm), 0);
+        if (last.sup / base > .16) tags += tag('sup', money(last.sup), 100 * pie / base, true);
+      } else {
+        var role = E.proposer(p, N.round);
+        inner = '<div class="seg pie ' + (role === 'firm' ? 'firm-turn' : 'sup-turn') + '" style="width:' + (100 * pie / base).toFixed(3) + '%"></div>';
+      }
+    }
+    return '<div class="track"><div class="fill" style="width:100%">' + inner + '</div>' + tags + '</div>';
+  }
+
+  function stepsHTML(G, N) {
+    var out = '';
+    for (var r = 1; r <= G.params.rounds; r++) {
+      var h = N.hist[r - 1], cls = '';
+      if (h && h.resp === 'reject') cls = r === G.params.rounds ? 'fail' : 'rej';
+      else if (h && h.resp === 'accept') cls = 'acc';
+      else if (!E.ended(N) && r === N.round) cls = 'cur';
+      out += '<li class="' + cls + '">R' + r + '</li>';
+    }
+    return '<ol class="steps" aria-label="Rounds">' + out + '</ol>';
+  }
+
+  /* ---------------------------------------------------------------- results */
+  function negSummary(G, N) {
+    var first = N.hist[0] || null, base = G.params.pie;
+    return {
+      G: G, N: N, first: first,
+      firstSup: first ? first.sup : null,
+      done: E.ended(N), deal: N.phase === 'deal', round: N.out ? N.out.r : N.round,
+      firm: N.out ? N.out.firm : null, sup: N.out ? N.out.sup : null,
+      lost: N.out ? base - N.out.firm - N.out.sup : null
+    };
+  }
+  function statsFor(rows) {
+    var fin = rows.filter(function (x) { return x.done; });
+    var firsts = rows.filter(function (x) { return x.first && x.first.r === 1; });
+    var deals = fin.filter(function (x) { return x.deal; });
+    var sum = function (a, f) { return a.reduce(function (s, x) { return s + f(x); }, 0); };
+    var base = rows.length ? rows[0].G.params.pie : 0;
+    return {
+      n: rows.length, fin: fin.length,
+      firstAvg: firsts.length ? sum(firsts, function (x) { return x.first.sup; }) / firsts.length : null,
+      firstN: firsts.length,
+      firstProposer: firsts.length ? firsts[0].first.by : 'firm',
+      r1: deals.filter(function (x) { return x.round === 1; }).length,
+      deals: deals.length, nodeal: fin.length - deals.length,
+      avgRound: deals.length ? sum(deals, function (x) { return x.round; }) / deals.length : null,
+      lost: sum(fin, function (x) { return x.lost; }), base: base,
+      firmAvg: fin.length ? sum(fin, function (x) { return x.firm; }) / fin.length : null,
+      supAvg: fin.length ? sum(fin, function (x) { return x.sup; }) / fin.length : null
+    };
+  }
+
+  function outcomeChart(rows, teams) {
+    if (!rows.length) return '';
+    var base = rows[0].G.params.pie, spe = E.spe(rows[0].G.params)[0];
+    var speFirm = spe.proposer === 'firm' ? spe.keep : spe.give;
+    var L = 230, R = 980, W = R - L, rowH = 46, top = 34, H = top + rows.length * rowH + 30;
+    function x(c) { return L + W * c / base; }
+    var s = '<svg class="chart" viewBox="0 0 1000 ' + H + '" role="img" aria-label="How each contract split the surplus">';
+    s += '<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="none"/><line x1="0" y1="0" x2="0" y2="8" stroke="var(--lost)" stroke-width="3" opacity=".55"/></pattern></defs>';
+    [0, .25, .5, .75, 1].forEach(function (f) {
+      s += '<line class="grid" x1="' + x(base * f) + '" x2="' + x(base * f) + '" y1="' + (top - 6) + '" y2="' + (H - 24) + '" stroke-width="1"/>';
+      s += '<text class="mut" x="' + x(base * f) + '" y="' + (H - 6) + '" font-size="13" text-anchor="middle">' + money(base * f) + '</text>';
+    });
+    rows.forEach(function (row, j) {
+      var y = top + j * rowH, N = row.N;
+      var label = 'G' + (row.G.k + 1) + ' · ' + teams[N.firm - 1].name + ' / ' + teams[N.supplier - 1].name;
+      s += '<text x="' + (L - 12) + '" y="' + (y + 21) + '" font-size="14" text-anchor="end">' + esc(label) + '</text>';
+      if (!row.done) {
+        s += '<rect x="' + L + '" y="' + (y + 6) + '" width="' + W + '" height="24" rx="4" fill="var(--surface-2)" stroke="var(--line)"/>';
+        s += '<text class="mut" x="' + (L + 10) + '" y="' + (y + 23) + '" font-size="13">still negotiating</text>';
+        return;
+      }
+      var f = row.firm, sp = row.sup, lost = row.lost;
+      if (f > 0) s += '<rect x="' + x(0) + '" y="' + (y + 6) + '" width="' + (x(f) - x(0)) + '" height="24" fill="var(--firm)"/>';
+      if (sp > 0) s += '<rect x="' + x(f) + '" y="' + (y + 6) + '" width="' + (x(f + sp) - x(f)) + '" height="24" fill="var(--sup)"/>';
+      if (lost > 0) s += '<rect x="' + x(f + sp) + '" y="' + (y + 6) + '" width="' + (x(base) - x(f + sp)) + '" height="24" fill="url(#hatch)" stroke="var(--line)"/>';
+      var note = row.deal ? 'round ' + row.round : 'no contract';
+      if (lost > 0 && (x(base) - x(f + sp)) > 90) s += '<text class="mut" x="' + (x(base) - 8) + '" y="' + (y + 23) + '" font-size="12" text-anchor="end">' + note + '</text>';
+      else if (row.deal) s += '<text x="' + (x(base) - 8) + '" y="' + (y + 23) + '" font-size="12" text-anchor="end" fill="#fff" style="fill:var(--sup-ink)">' + note + '</text>';
+    });
+    var xs = x(speFirm), xh = x(base / 2);
+    s += '<line x1="' + xh + '" x2="' + xh + '" y1="' + (top - 10) + '" y2="' + (H - 24) + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="2 4"/>';
+    s += '<text class="halo" x="' + xh + '" y="' + (top - 14) + '" font-size="12" text-anchor="middle">50 : 50</text>';
+    s += '<line x1="' + xs + '" x2="' + xs + '" y1="' + (top - 10) + '" y2="' + (H - 24) + '" stroke="var(--bad)" stroke-width="2" stroke-dasharray="6 4"/>';
+    s += '<text class="halo" x="' + xs + '" y="' + (top - 14) + '" font-size="12" text-anchor="middle" style="fill:var(--bad)">theory</text>';
+    return s + '</svg>';
+  }
+
+  function firstOfferChart(rows, teams) {
+    var pts = rows.filter(function (x) { return x.first && x.first.r === 1; });
+    if (!pts.length) return '';
+    var p = pts[0].G.params, base = p.pie, spe = E.spe(p)[0];
+    var resp = E.other(spe.proposer);
+    var L = 40, R = 960, W = R - L, H = 150, y0 = 78;
+    function x(c) { return L + W * c / base; }
+    var s = '<svg class="chart" viewBox="0 0 1000 ' + H + '" role="img" aria-label="First proposals, amount offered to the ' + roleName(resp) + '">';
+    s += '<line x1="' + L + '" x2="' + R + '" y1="' + y0 + '" y2="' + y0 + '" stroke="var(--line-strong)" stroke-width="2"/>';
+    [0, .25, .5, .75, 1].forEach(function (f) {
+      s += '<line x1="' + x(base * f) + '" x2="' + x(base * f) + '" y1="' + (y0 - 5) + '" y2="' + (y0 + 5) + '" stroke="var(--line-strong)"/>';
+      s += '<text class="mut" x="' + x(base * f) + '" y="' + (y0 + 26) + '" font-size="13" text-anchor="middle">' + money(base * f) + '</text>';
+    });
+    var xs = x(spe.give);
+    s += '<line x1="' + xs + '" x2="' + xs + '" y1="' + (y0 - 46) + '" y2="' + (y0 + 8) + '" stroke="var(--bad)" stroke-width="2" stroke-dasharray="6 4"/>';
+    s += '<text x="' + xs + '" y="' + (y0 - 52) + '" font-size="12" text-anchor="middle" style="fill:var(--bad)">theory ' + money(spe.give) + '</text>';
+    var xh = x(base / 2);
+    s += '<line x1="' + xh + '" x2="' + xh + '" y1="' + (y0 - 46) + '" y2="' + (y0 + 8) + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="2 4"/>';
+    s += '<text x="' + xh + '" y="' + (y0 - 52) + '" font-size="12" text-anchor="middle">50 : 50</text>';
+    var used = {};
+    pts.forEach(function (row) {
+      var v = row.first.sup, cx = x(v), key = Math.round(cx / 14);
+      var stack = used[key] = (used[key] || 0) + 1;
+      var cy = y0 - 12 - (stack - 1) * 16;
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="7" fill="var(--sup)" stroke="var(--surface)" stroke-width="2"><title>' + esc(teams[E.teamOf(row.N, spe.proposer) - 1].name) + ' offered ' + money(v) + '</title></circle>';
+    });
+    s += '<text class="mut" x="' + L + '" y="' + (H - 8) + '" font-size="13">Each dot is one first proposal: the amount offered to the ' + roleName(resp) + ' in round 1.</text>';
+    return s + '</svg>';
+  }
+
+  function lastWordChart(T, shrink, firstRole) {
+    var maxT = 10, L = 60, R = 980, W = R - L, top = 20, H = 250, bot = H - 40, ch = bot - top;
+    function y(f) { return bot - ch * f; }
+    var bw = W / maxT * .62;
+    var s = '<svg class="chart" viewBox="0 0 1000 ' + H + '" role="img" aria-label="Share kept by the first proposer, by number of rounds">';
+    [0, .25, .5, .75, 1].forEach(function (f) {
+      s += '<line class="grid" x1="' + L + '" x2="' + R + '" y1="' + y(f) + '" y2="' + y(f) + '"/>';
+      s += '<text class="mut" x="' + (L - 8) + '" y="' + (y(f) + 4) + '" font-size="12" text-anchor="end">' + Math.round(f * 100) + '%</text>';
+    });
+    for (var t = 1; t <= maxT; t++) {
+      var f = E.firstShare(t, shrink), cx = L + W * (t - .5) / maxT;
+      var col = (t % 2 === 1) ? 'var(--' + roleCls(firstRole) + ')' : 'var(--' + roleCls(E.other(firstRole)) + ')';
+      s += '<rect x="' + (cx - bw / 2) + '" y="' + y(f) + '" width="' + bw + '" height="' + (bot - y(f)) + '" fill="' + col + '"' + (t === T ? ' stroke="var(--ink)" stroke-width="3"' : ' opacity=".8"') + '/>';
+      s += '<text x="' + cx + '" y="' + (y(f) - 6) + '" font-size="12" text-anchor="middle">' + Math.round(f * 100) + '%</text>';
+      s += '<text class="mut" x="' + cx + '" y="' + (bot + 18) + '" font-size="12" text-anchor="middle">' + t + '</text>';
+    }
+    var inf = 1 / (2 - shrink / 100);
+    s += '<line x1="' + L + '" x2="' + R + '" y1="' + y(inf) + '" y2="' + y(inf) + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 5"/>';
+    s += '<text class="halo" x="' + (R - 4) + '" y="' + (y(inf) - 6) + '" font-size="12" text-anchor="end">no deadline: ' + Math.round(inf * 1000) / 10 + '%</text>';
+    s += '<text class="mut" x="' + ((L + R) / 2) + '" y="' + (H - 4) + '" font-size="12" text-anchor="middle">number of rounds before the contract is lost (bar colour = who proposes last)</text>';
+    return s + '</svg>';
+  }
+
+  function csvFor(st) {
+    var head = ['session', 'game', 'negotiation', 'firm_team', 'firm_name', 'supplier_team', 'supplier_name', 'round', 'surplus',
+      'proposer_role', 'proposer_team', 'offer_firm', 'offer_supplier', 'supplier_share_pct', 'response',
+      'seconds_to_propose', 'seconds_to_answer', 'entered_by', 'outcome', 'outcome_round', 'payoff_firm', 'payoff_supplier'];
+    var lines = [head.join(',')];
+    function q(v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    function d(c) { return c == null || c === '' ? '' : (c / 100).toFixed(2); }
+    st.games.forEach(function (G) {
+      G.negs.forEach(function (N) {
+        var fn = st.teams[N.firm - 1].name, sn = st.teams[N.supplier - 1].name;
+        var outc = N.phase === 'deal' ? 'contract' : N.phase === 'nodeal' ? 'no_contract' : 'unfinished';
+        var tail = [outc, N.out ? N.out.r : '', N.out ? d(N.out.firm) : '', N.out ? d(N.out.sup) : ''];
+        if (!N.hist.length) {
+          lines.push([st.sid, G.k + 1, N.i + 1, N.firm, fn, N.supplier, sn, '', '', '', '', '', '', '', '', '', '', ''].concat(tail).map(q).join(','));
+          return;
+        }
+        N.hist.forEach(function (h) {
+          lines.push([st.sid, G.k + 1, N.i + 1, N.firm, fn, N.supplier, sn, h.r, d(h.pie), h.by, E.teamOf(N, h.by),
+            d(h.firm), d(h.sup), (100 * h.sup / h.pie).toFixed(1), h.resp || 'pending',
+            Math.round((h.wO || 0) / 1000), h.tR ? Math.round((h.wR || 0) / 1000) : '', h.src + (h.rsrc ? '/' + h.rsrc : '')].concat(tail).map(q).join(','));
+        });
+      });
+    });
+    return lines.join('\n');
+  }
+
+  function copyText(text, okMsg) {
+    var done = function () { toast(okMsg || 'Copied'); };
+    try {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text) ? done() : toast('Select the text and copy it by hand.'); });
+    } catch (e) { fallbackCopy(text) ? done() : toast('Select the text and copy it by hand.'); }
+  }
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta); return ok;
+  }
+  /* in the Claude viewer files go through its downloads capability; elsewhere a normal link */
+  var DL = null;
+  if (IN_VIEWER) {
+    try {
+      window.claude.use('downloads').then(function (d) {
+        DL = d || null;
+        if (DL && mode === 'console' && C.st && C.tab === 'data') C.render();
+      }, function () { DL = null; });
+    } catch (e) { DL = null; }
+  }
+  function download(name, text, type) {
+    if (IN_VIEWER) {
+      if (!DL) { toast('Saving files is not available here. Use Copy instead.', 3200); return; }
+      DL.save({ filename: name, data: text }).then(function () { toast('Saved ' + name); }, function (e) {
+        if (e && e.code === 'declined') return;
+        toast('The file could not be saved. Use Copy instead.', 3200);
+      });
+      return;
+    }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: type || 'text/plain' }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  /* keep the cursor where it was when a panel is redrawn */
+  function keepFocus(fn) {
+    var a = document.activeElement, id = a && a.id, s = null, e = null;
+    try { s = a.selectionStart; e = a.selectionEnd; } catch (x) { /* not a text field */ }
+    fn();
+    if (id) {
+      var b = document.getElementById(id);
+      if (b && b !== document.activeElement) {
+        b.focus({ preventScroll: true });
+        try { if (s != null) b.setSelectionRange(s, e); } catch (x) { /* ignore */ }
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------- landing */
+  function renderLanding() {
+    var p = { pie: 500000, shrink: 10, rounds: 5, first: 'firm' };
+    app.innerHTML =
+      '<main class="wrap landing">' +
+      '<header class="stack" style="gap:10px"><p class="eyebrow">Strategy · ELA #2 · Bargaining power</p>' +
+      '<h1>The Shrinking Contract</h1>' +
+      '<p class="lede">A Firm and its key Supplier split ' + money(p.pie) + ' of contract surplus. Every rejected proposal costs a week, and the surplus shrinks by ' + p.shrink + '%.</p></header>' +
+      '<section class="panel">' + scheduleHTML(p, 0, 0) + '</section>' +
+      '<div class="choices">' +
+      '<button class="choice" data-act="go-console">I’m the instructor<span>Set up the session, project the board, read the results.</span></button>' +
+      (IN_VIEWER ? '<div class="choice" style="cursor:default">Team devices<span>Teams join from the web copy of this page (GitHub Pages). This preview runs the laptop-only version.</span></div>'
+        : '<button class="choice" data-act="go-join">Join as a team<span>One device per team. You need the code on the screen.</span></button>') +
+      '</div></main>';
+  }
+
+  /* ----------------------------------------------------------- instructor console */
+  var C = {
+    st: null, undo: [], cid: '', subs: [], net: 'local', ro: false, tab: 'board', present: false, show: false, manualOn: false,
+    pushing: false, again: false, pushTimer: null, pushErr: '', drafts: {}, open: {}, step: 0, wiShrink: null, resView: 'all', saved: null,
+
+    start: function () {
+      var saved = LS.get('ela2.console');
+      this.cid = this.cid || ('C' + rid(8)); /* one id per open window */
+      this.saved = saved && saved.st && saved.st.app === 'ela2' ? saved : null;
+      this.renderSetup();
+    },
+    save: function () { LS.set('ela2.console', { st: this.st, undo: this.undo.slice(-25), cid: this.cid }); },
+    log: function (msg) { this.st.log.push({ t: now(), m: msg }); if (this.st.log.length > 80) this.st.log.splice(0, this.st.log.length - 80); },
+
+    /* ---- setup */
+    renderSetup: function () {
+      var s = this.saved && this.saved.st;
+      var defBase = (s && s.db) || CFG.databaseURL || '';
+      var liveDisabled = IN_VIEWER;
+      var resume = s ? '<section class="panel stack"><div class="spread"><div><p class="eyebrow">Saved on this computer</p><h2>Session <span class="num">' + esc(s.sid) + '</span></h2>' +
+        '<p class="muted small">' + (s.mode === 'live' ? 'Live, team devices' : 'This laptop only') + ' · ' + s.teams.length + ' teams · ' +
+        (s.games.length ? s.games.length + ' game' + (s.games.length > 1 ? 's' : '') + ' played' : 'not started') + ' · last change ' + hhmm(s.at) + '</p></div>' +
+        '<div class="row"><button class="btn primary" data-act="resume">Resume</button><button class="btn ghost" data-act="discard">Discard</button></div></div></section>' : '';
+      var opts = [2, 4, 6, 8, 10, 12].map(function (n) { return '<option value="' + n + '"' + (n === 6 ? ' selected' : '') + '>' + n + ' teams</option>'; }).join('');
+      app.innerHTML =
+        '<div class="wrap narrow stack">' +
+        '<header class="stack" style="gap:6px"><p class="eyebrow">Instructor · ELA #2 · Bargaining power</p><h1 style="font-size:var(--step-4);font-weight:800">The Shrinking Contract</h1></header>' +
+        resume +
+        '<form id="setup" class="panel stack" novalidate>' +
+        '<h2>New session</h2>' +
+        '<div class="radio-cards" role="radiogroup" aria-label="How teams take part">' +
+        '<label class="radio-card"><input type="radio" name="mode" value="live" id="m-live"' + (liveDisabled ? ' disabled' : ' checked') + '><b>Live: team devices</b><span>Each team uses one phone or laptop. Needs your free online database.</span></label>' +
+        '<label class="radio-card"><input type="radio" name="mode" value="local" id="m-local"' + (liveDisabled ? ' checked' : '') + '><b>This laptop only</b><span>Teams write on paper slips; you type each decision. No internet needed.</span></label>' +
+        '</div>' +
+        (liveDisabled ? '<p class="msg info">Live mode is off in this preview: the Claude viewer blocks connections to outside databases. Run live sessions from the GitHub Pages copy.</p>' : '') +
+        '<div id="dbbox" class="stack" style="gap:8px"' + (liveDisabled ? ' hidden' : '') + '>' +
+        '<label class="field">Database address <span class="hint">From Firebase: Realtime Database, Data tab. It ends in firebasedatabase.app or firebaseio.com.</span>' +
+        '<input type="url" id="f-db" placeholder="https://your-project-default-rtdb.europe-west1.firebasedatabase.app" value="' + esc(defBase) + '" autocomplete="off" spellcheck="false"></label>' +
+        '<div class="row"><button type="button" class="btn sm" data-act="testdb">Test the connection</button><span id="dbmsg" class="small muted" aria-live="polite"></span></div>' +
+        (FILE_PAGE ? '<p class="msg bad">This page was opened as a file. Teams cannot reach a file on your computer: open the GitHub Pages address for live sessions.</p>' : '') +
+        '</div>' +
+        '<div class="grid2">' +
+        '<label class="field">Teams<select id="f-n">' + opts + '</select></label>' +
+        '<label class="field">Who proposes first<select id="f-first"><option value="firm" selected>The Firm</option><option value="supplier">The Supplier</option></select></label>' +
+        '</div>' +
+        '<label class="field">Team names <span class="hint">Optional, one per line. Blank lines keep “Team 1”, “Team 2”…</span><textarea id="f-names" rows="4" style="min-height:96px;font-family:var(--font-ui);font-size:15px" placeholder="Team 1\nTeam 2"></textarea></label>' +
+        '<div class="grid2">' +
+        '<label class="field">Surplus in round 1 ($)<input type="number" id="f-pie" min="10" step="1" value="5000" inputmode="numeric"></label>' +
+        '<label class="field">Shrink per rejection (%)<input type="number" id="f-shrink" min="1" max="90" step="1" value="10" inputmode="numeric"></label>' +
+        '<label class="field">Rounds<input type="number" id="f-rounds" min="1" max="10" step="1" value="5" inputmode="numeric"></label>' +
+        '</div>' +
+        '<label class="field">Stakes line shown to students <span class="hint">Optional. For example: “Every $1,000 your team earns adds 0.1 to each member’s ELA mark.”</span><input type="text" id="f-stakes" maxlength="200"></label>' +
+        '<p id="setupmsg" class="small" aria-live="polite"></p>' +
+        '<button type="submit" class="btn primary big">Create session</button>' +
+        '</form>' +
+        (liveDisabled ? '' :
+          '<details class="panel"><summary style="cursor:pointer;font-weight:600">Continue a live session started on another computer</summary>' +
+          '<div class="stack" style="margin-top:12px"><p class="small muted">Uses the database address above. This window takes over; the other one stops sending.</p>' +
+          '<div class="row"><input type="text" id="f-code" placeholder="Session code" maxlength="8" style="max-width:12rem;text-transform:uppercase" autocomplete="off"><button type="button" class="btn" data-act="takeover">Continue</button></div><p id="tkmsg" class="small" aria-live="polite"></p></div></details>') +
+        '</div>';
+      var form = document.getElementById('setup');
+      form.addEventListener('submit', function (ev) { ev.preventDefault(); C.createFromForm(); });
+      form.addEventListener('change', function (ev) {
+        if (ev.target.name === 'mode') document.getElementById('dbbox').hidden = ev.target.value !== 'live';
+      });
+    },
+    readParams: function () {
+      var pie = Math.round(parseFloat(document.getElementById('f-pie').value) * 100);
+      var shrink = parseFloat(document.getElementById('f-shrink').value);
+      var rounds = parseInt(document.getElementById('f-rounds').value, 10);
+      var first = document.getElementById('f-first').value;
+      if (!(pie >= 1000) || !(shrink >= 1 && shrink <= 90) || !(rounds >= 1 && rounds <= 10)) return null;
+      return { pie: pie, shrink: shrink, rounds: rounds, first: first === 'supplier' ? 'supplier' : 'firm' };
+    },
+    createFromForm: function () {
+      var mode = (document.querySelector('input[name="mode"]:checked') || {}).value || 'local';
+      var msg = document.getElementById('setupmsg');
+      var params = this.readParams();
+      if (!params) { msg.className = 'small msg bad'; msg.textContent = 'Check the rules: surplus of at least $10, shrink between 1% and 90%, 1 to 10 rounds.'; return; }
+      var base = '';
+      if (mode === 'live') {
+        base = RT.norm(document.getElementById('f-db').value);
+        if (!base) { msg.className = 'small msg bad'; msg.textContent = 'Paste your database address first, or choose “This laptop only”.'; return; }
+      }
+      var names = document.getElementById('f-names').value.split('\n').map(function (x) { return x.trim().slice(0, 40); });
+      var n = parseInt(document.getElementById('f-n').value, 10) || 6;
+      this.st = E.newSession({ sid: rid(6), mode: mode, db: base, n: n, names: names, params: params, stakes: document.getElementById('f-stakes').value.trim(), cid: this.cid });
+      this.undo = [];
+      this.log('Session created');
+      this.save();
+      this.enter();
+    },
+    testDb: function () {
+      var base = RT.norm(document.getElementById('f-db').value), out = document.getElementById('dbmsg');
+      if (!base) { out.textContent = 'Paste the address first.'; return; }
+      out.textContent = 'Testing…'; out.style.color = '';
+      var path = CFG.basePath + '/test-' + rid(6).toLowerCase(), stamp = now();
+      RT.put(base, path, { at: stamp })
+        .then(function () { return RT.get(base, path); })
+        .then(function (v) {
+          if (!v || v.at !== stamp) throw new Error('readback');
+          return RT.del(base, path);
+        })
+        .then(function () { out.textContent = 'Connected. Teams will be able to join.'; out.style.color = 'var(--ok)'; })
+        .catch(function (e) { out.textContent = e && e.message === 'readback' ? 'Connected, but the test value did not come back. Check the rules.' : netErrorText(e); out.style.color = 'var(--bad)'; });
+    },
+    takeover: function () {
+      var base = RT.norm(document.getElementById('f-db').value), code = (document.getElementById('f-code').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      var out = document.getElementById('tkmsg');
+      if (!base || !code) { out.textContent = 'Fill in the database address and the session code.'; return; }
+      out.textContent = 'Looking for session ' + code + '…';
+      var self = this;
+      RT.get(base, CFG.basePath + '/' + code + '/state').then(function (v) {
+        if (!v || !v.json) { out.textContent = 'No session with that code in this database.'; return; }
+        var st = JSON.parse(v.json);
+        st.db = base; st.mode = 'live'; st.cid = self.cid; st.rev = (v.rev || st.rev || 1) + 1; st.log = st.log || [];
+        self.st = st; self.undo = [];
+        self.log('Taken over from another window');
+        self.save(); self.enter();
+      }).catch(function (e) { out.textContent = netErrorText(e); });
+    },
+    resume: function () {
+      this.st = this.saved.st; this.undo = this.saved.undo || [];
+      this.st.cid = this.cid; this.st.rev = (this.st.rev || 1) + 1; this.st.log = this.st.log || [];
+      this.save(); this.enter();
+    },
+    discard: function () {
+      var self = this;
+      openModal('<h2>Discard the saved session?</h2><p>Its decisions stay in the database (if it was live), but this computer forgets it. Copy the data from the Data tab first if you need it.</p>' +
+        '<div class="row"><button class="btn bad" data-m="yes">Discard</button><button class="btn" data-m="close" autofocus>Keep it</button></div>', function (a) {
+        if (a === 'yes') { LS.del('ela2.console'); self.saved = null; closeModal(); self.renderSetup(); }
+      });
+    },
+
+    /* ---- session */
+    enter: function () {
+      this.ro = false; this.show = false; this.step = 0;
+      if (this.st.mode === 'live') this.connect(); else this.net = 'local';
+      this.tab = this.st.mode === 'live' && this.st.cur < 0 ? 'join' : 'board';
+      this.renderShell();
+      this.push();
+    },
+    connect: function () {
+      this.disconnect();
+      var self = this, sid = this.st.sid, base = this.st.db;
+      this.net = 'connecting';
+      this.subs.push(RT.listen(base, CFG.basePath + '/' + sid + '/inbox', function (d) { self.onInbox(d); }, function (s) { self.onNet(s); }));
+      this.subs.push(RT.listen(base, CFG.basePath + '/' + sid + '/state', function (d) { self.onRemote(d); }, function () { }));
+    },
+    disconnect: function () { this.subs.forEach(function (s) { s.close(); }); this.subs = []; },
+    onNet: function (s) {
+      this.net = s === 'open' ? 'live' : s === 'denied' ? 'denied' : 'retrying';
+      this.renderNet();
+      if (s === 'open' && this.pushErr) this.push();
+    },
+    onRemote: function (d) {
+      if (!d || !this.st) return;
+      if (d.cid && d.cid !== this.cid && (d.rev || 0) >= (this.st.rev || 0)) {
+        if (!this.ro) { this.ro = true; this.renderShell(); }
+      }
+    },
+    publicState: function () {
+      var copy = JSON.parse(JSON.stringify(this.st)); delete copy.log; return copy;
+    },
+    push: function () {
+      var self = this;
+      if (!this.st || this.st.mode !== 'live' || this.ro) return;
+      if (this.pushing) { this.again = true; return; }
+      this.pushing = true; this.again = false;
+      var payload = { json: JSON.stringify(this.publicState()), rev: this.st.rev, cid: this.cid, at: now() };
+      RT.put(this.st.db, CFG.basePath + '/' + this.st.sid + '/state', payload).then(function () {
+        self.pushErr = ''; self.pushing = false; self.renderNet();
+        if (self.again) self.push();
+      }, function (e) {
+        self.pushing = false; self.pushErr = netErrorText(e); self.renderNet();
+        clearTimeout(self.pushTimer); self.pushTimer = setTimeout(function () { self.push(); }, 2500);
+      });
+    },
+    commit: function (fn, quiet) {
+      if (this.ro) { toast('This window is read-only. Use “Take back control” first.'); return false; }
+      var before = JSON.stringify(this.st);
+      var err = fn(this.st);
+      if (err) { this.st = JSON.parse(before); toast(err, 3600); return false; }
+      if (!quiet) { this.undo.push(before); if (this.undo.length > 40) this.undo.shift(); }
+      this.st.rev++; this.st.at = now();
+      this.save(); this.push(); this.render();
+      return true;
+    },
+    undoLast: function () {
+      if (this.ro) return;
+      if (!this.undo.length) { toast('Nothing to undo.'); return; }
+      var prev = JSON.parse(this.undo.pop()), cur = this.st;
+      prev.lastKey = cur.lastKey; prev.rev = cur.rev + 1; prev.at = now(); prev.log = cur.log; prev.cid = this.cid;
+      prev.teams.forEach(function (t, j) { var c = cur.teams[j]; if (c) { t.dev = c.dev; t.devAt = c.devAt; t.seen = c.seen; t.name = c.name; } });
+      this.st = prev; this.log('Undo');
+      this.save(); this.push(); this.render(); toast('Last change undone');
+    },
+    onInbox: function (data) {
+      if (this.ro || !this.st || !data || typeof data !== 'object') return;
+      var self = this, last = this.st.lastKey || '';
+      var keys = Object.keys(data).filter(function (k) { return k > last; }).sort();
+      if (!keys.length) return;
+      keys.forEach(function (k) {
+        var before = JSON.stringify(self.st);
+        self.st.lastKey = k;
+        var res = self.applyMsg(data[k]);
+        if (res === 'game') {
+          var snap = JSON.parse(before); snap.lastKey = k; self.undo.push(JSON.stringify(snap));
+          if (self.undo.length > 40) self.undo.shift();
+        }
+      });
+      this.st.rev++; this.st.at = now();
+      this.save(); this.push(); this.render();
+    },
+    applyMsg: function (m) {
+      if (!m || typeof m !== 'object') return 'none';
+      var st = this.st, team = parseInt(m.team, 10), T = st.teams[team - 1];
+      if (!T || typeof m.dev !== 'string' || !m.dev) return 'none';
+      if (m.k === 'hello') {
+        if (!T.dev) { T.dev = m.dev; T.devAt = now(); T.seen = now(); this.log(T.name + ': device connected'); return 'team'; }
+        if (T.dev === m.dev) { T.seen = now(); return 'team'; }
+        this.log(T.name + ': another device asked to join (it can only watch)'); return 'none';
+      }
+      if (m.k !== 'offer' && m.k !== 'resp') return 'none';
+      if (!T.dev) { T.dev = m.dev; T.devAt = now(); }
+      else if (T.dev !== m.dev) { this.log(T.name + ': ignored a decision sent from a second device'); return 'none'; }
+      T.seen = now();
+      var g = parseInt(m.g, 10), i = parseInt(m.i, 10), r = parseInt(m.r, 10);
+      var err = m.k === 'offer' ? E.offer(st, g, i, r, team, parseInt(m.sup, 10), 'team') : E.respond(st, g, i, r, team, m.acc === true, 'team');
+      if (err) { this.log(T.name + ': ignored, ' + err.charAt(0).toLowerCase() + err.slice(1)); return 'none'; }
+      var G = st.games[g], N = G.negs[i], h = N.hist[N.hist.length - 1];
+      if (m.k === 'offer') this.log(T.name + ' proposed in round ' + r + ': Firm ' + money(h.firm) + ', Supplier ' + money(h.sup));
+      else this.log(T.name + (m.acc === true ? ' accepted' : ' rejected') + ' in round ' + r);
+      if (G.status === 'done') this.log('Game ' + (g + 1) + ' complete');
+      return 'game';
+    },
+
+    /* ---- actions */
+    act: function (a, el) {
+      var self = this, st = this.st;
+      if (a === 'tab') { this.tab = el.getAttribute('data-tab'); this.renderShell(); return; }
+      if (a === 'present') { this.present = !this.present; document.body.classList.toggle('present', this.present); this.renderShell(); return; }
+      if (a === 'theme') { Theme.cycle(); return; }
+      if (a === 'show') { this.show = !this.show; this.render(); return; }
+      if (a === 'manual') { this.manualOn = !this.manualOn; this.render(); return; }
+      if (a === 'undo') { this.undoLast(); return; }
+      if (a === 'start') {
+        if (st.cur >= 0 && st.games[st.cur].status === 'live') return;
+        var k = st.games.length;
+        var missing = st.mode === 'live' ? st.teams.filter(function (t) { return !t.dev; }) : [];
+        var go = function () { self.commit(function (s) { var e = E.startGame(s); if (!e) self.log('Game ' + (k + 1) + ' started'); return e; }); self.tab = 'board'; self.renderShell(); };
+        if (missing.length) {
+          openModal('<h2>Start Game ' + (k + 1) + '?</h2><p>' + missing.length + ' team' + (missing.length > 1 ? 's have' : ' has') + ' no device connected yet (' + esc(missing.map(function (t) { return t.name; }).join(', ')) + '). You can still start and type their decisions yourself.</p>' +
+            '<div class="row"><button class="btn primary" data-m="go">Start anyway</button><button class="btn" data-m="close" autofocus>Wait</button></div>', function (x) { if (x === 'go') { closeModal(); go(); } });
+        } else go();
+        return;
+      }
+      if (a === 'offer') {
+        var i = parseInt(el.getAttribute('data-i'), 10), G = st.games[st.cur], N = G && G.negs[i];
+        if (!N) return;
+        var inp = document.getElementById('mo-' + i), val = parseMoney(inp && inp.value);
+        var r0 = N.round, pie = E.pie(G.params, r0), team = E.teamOf(N, E.proposer(G.params, r0));
+        if (isNaN(val) || val > pie) { toast('Type the Supplier’s share: between $0 and ' + money(pie) + '.', 3200); if (inp) inp.focus(); return; }
+        delete this.drafts['mo-' + i];
+        this.commit(function (s) {
+          var e = E.offer(s, s.cur, i, r0, null, val, 'console');
+          if (!e) self.log(s.teams[team - 1].name + ' proposed in round ' + r0 + ' (typed): Firm ' + money(pie - val) + ', Supplier ' + money(val));
+          return e;
+        });
+        return;
+      }
+      if (a === 'acc' || a === 'rej') {
+        var j = parseInt(el.getAttribute('data-i'), 10), G2 = st.games[st.cur], N2 = G2 && G2.negs[j];
+        if (!N2) return;
+        var r = N2.round, resp = E.teamOf(N2, E.other(E.proposer(G2.params, r)));
+        this.commit(function (s) {
+          var e = E.respond(s, s.cur, j, r, null, a === 'acc', 'console');
+          if (!e) {
+            self.log(s.teams[resp - 1].name + (a === 'acc' ? ' accepted' : ' rejected') + ' in round ' + r + ' (typed)');
+            if (s.games[s.cur].status === 'done') self.log('Game ' + (s.cur + 1) + ' complete');
+          }
+          return e;
+        });
+        return;
+      }
+      if (a === 'release') {
+        var t = parseInt(el.getAttribute('data-t'), 10);
+        this.commit(function (s) { s.teams[t - 1].dev = ''; s.teams[t - 1].devAt = 0; self.log(s.teams[t - 1].name + ': device released'); return null; }, true);
+        toast('Released. The next device that joins as this team takes over.'); return;
+      }
+      if (a === 'rename') {
+        var tt = parseInt(el.getAttribute('data-t'), 10), cur = st.teams[tt - 1];
+        openModal('<h2>Rename ' + esc(cur.name) + '</h2><label class="field">Name<input type="text" id="rn" maxlength="40" value="' + esc(cur.name) + '" autofocus></label>' +
+          '<div class="row"><button class="btn primary" data-m="ok">Save</button><button class="btn" data-m="close">Cancel</button></div>', function (x, b, box) {
+          if (x !== 'ok') return;
+          var v = box.querySelector('#rn').value.trim().slice(0, 40) || ('Team ' + tt);
+          closeModal(); self.commit(function (s) { s.teams[tt - 1].name = v; return null; }, true);
+        });
+        return;
+      }
+      if (a === 'res-view') { this.resView = el.getAttribute('data-v'); this.render(); return; }
+      if (a === 'bi-next') { this.step = Math.min(this.step + 1, (this.theoryParams().rounds)); this.render(); return; }
+      if (a === 'bi-all') { this.step = this.theoryParams().rounds; this.render(); return; }
+      if (a === 'bi-reset') { this.step = 0; this.render(); return; }
+      if (a === 'copy-csv') { copyText(csvFor(st), 'CSV copied'); return; }
+      if (a === 'dl-csv') { download('ela2_' + st.sid + '.csv', csvFor(st), 'text/csv'); return; }
+      if (a === 'copy-json') { copyText(JSON.stringify(st), 'Backup copied'); return; }
+      if (a === 'dl-json') { download('ela2_' + st.sid + '.json', JSON.stringify(st, null, 1), 'application/json'); return; }
+      if (a === 'edit-rules') { this.editRules(); return; }
+      if (a === 'retake') {
+        this.ro = false; this.st.cid = this.cid; this.st.rev += 1; this.log('Took back control'); this.save(); this.push(); this.renderShell(); return;
+      }
+      if (a === 'new') {
+        openModal('<h2>Leave this session?</h2><p>Session <b class="num">' + esc(st.sid) + '</b> stays saved on this computer until you start another one. You can resume it from the setup screen.</p>' +
+          '<div class="row"><button class="btn primary" data-m="yes">Go to setup</button><button class="btn" data-m="close" autofocus>Stay</button></div>', function (x) {
+          if (x === 'yes') { closeModal(); self.disconnect(); self.st = null; document.body.classList.remove('present'); self.present = false; self.start(); }
+        });
+        return;
+      }
+      if (a === 'reset') {
+        openModal('<h2>Delete this session?</h2><p>This removes session <b class="num">' + esc(st.sid) + '</b> from this computer. Copy the CSV first if you need the data.</p>' +
+          '<div class="row"><button class="btn bad" data-m="yes">Delete</button><button class="btn" data-m="close" autofocus>Cancel</button></div>', function (x) {
+          if (x === 'yes') { closeModal(); self.disconnect(); LS.del('ela2.console'); self.st = null; self.saved = null; document.body.classList.remove('present'); self.present = false; self.start(); }
+        });
+        return;
+      }
+    },
+    editRules: function () {
+      var self = this, p = this.st.params;
+      openModal('<h2>Rules for the next game</h2><p class="small muted">Games already played keep their own rules.</p>' +
+        '<div class="grid2"><label class="field">Surplus in round 1 ($)<input type="number" id="er-pie" min="10" value="' + (p.pie / 100) + '"></label>' +
+        '<label class="field">Shrink per rejection (%)<input type="number" id="er-shrink" min="1" max="90" value="' + p.shrink + '"></label>' +
+        '<label class="field">Rounds<input type="number" id="er-rounds" min="1" max="10" value="' + p.rounds + '"></label>' +
+        '<label class="field">Who proposes first<select id="er-first"><option value="firm"' + (p.first !== 'supplier' ? ' selected' : '') + '>The Firm</option><option value="supplier"' + (p.first === 'supplier' ? ' selected' : '') + '>The Supplier</option></select></label></div>' +
+        '<label class="field">Stakes line<input type="text" id="er-stakes" maxlength="200" value="' + esc(this.st.stakes) + '"></label>' +
+        '<div class="row"><button class="btn primary" data-m="ok">Save</button><button class="btn" data-m="close">Cancel</button></div>', function (x, b, box) {
+        if (x !== 'ok') return;
+        var np = { pie: Math.round(parseFloat(box.querySelector('#er-pie').value) * 100), shrink: parseFloat(box.querySelector('#er-shrink').value), rounds: parseInt(box.querySelector('#er-rounds').value, 10), first: box.querySelector('#er-first').value === 'supplier' ? 'supplier' : 'firm' };
+        if (!(np.pie >= 1000) || !(np.shrink >= 1 && np.shrink <= 90) || !(np.rounds >= 1 && np.rounds <= 10)) { toast('Check the numbers.'); return; }
+        var stakes = box.querySelector('#er-stakes').value.trim().slice(0, 200);
+        closeModal(); self.commit(function (s) { s.params = np; s.stakes = stakes; self.log('Rules changed for the next game'); return null; });
+      });
+    },
+
+    /* ---- rendering */
+    renderShell: function () {
+      var st = this.st;
+      var tabs = [['join', 'Join'], ['rules', 'Rules'], ['board', 'Board'], ['results', 'Results'], ['theory', 'Theory'], ['data', 'Data']]
+        .filter(function (t) { return st.mode === 'live' || t[0] !== 'join'; });
+      if (st.mode !== 'live' && this.tab === 'join') this.tab = 'board';
+      var self = this;
+      app.innerHTML =
+        (this.ro ? '<div class="banner" role="alert">Another window is now running this session. This one is read-only.<button class="btn sm" data-act="retake">Take back control</button></div>' : '') +
+        '<div class="topbar"><div class="inner">' +
+        '<div class="brandmark"><b>The Shrinking Contract</b><span class="code chip" title="Session code">' + esc(st.sid) + '</span><span id="net"></span></div>' +
+        '<nav class="tabs" role="tablist">' + tabs.map(function (t) {
+          return '<button class="tab" role="tab" data-act="tab" data-tab="' + t[0] + '" aria-selected="' + (self.tab === t[0]) + '">' + t[1] + '</button>';
+        }).join('') + '</nav>' +
+        '<div class="tools"><button class="btn sm ghost" data-act="present" title="Hide the controls for projecting">' + (this.present ? 'Show controls' : 'Present') + '</button>' +
+        '<button class="btn sm ghost ctl" data-act="theme" title="Switch light or dark">Theme</button>' +
+        '<button class="btn sm ghost ctl" data-act="new">Setup</button></div>' +
+        '</div></div><main class="wrap" id="panel"></main>';
+      this.renderNet(); this.render();
+    },
+    renderNet: function () {
+      var el = document.getElementById('net'); if (!el || !this.st) return;
+      if (this.st.mode !== 'live') { el.innerHTML = '<span class="chip">Laptop only</span>'; return; }
+      var map = { live: ['ok', 'Live'], connecting: ['warn', 'Connecting…'], retrying: ['warn', 'Reconnecting…'], denied: ['bad', 'Access denied'], error: ['bad', 'Offline'] };
+      var m = map[this.net] || map.connecting;
+      if (this.pushErr && this.net === 'live') m = ['warn', 'Saving…'];
+      el.innerHTML = '<span class="chip ' + m[0] + '" title="' + esc(this.pushErr || '') + '"><span class="dot"></span>' + m[1] + '</span>';
+    },
+    render: function () {
+      var panel = document.getElementById('panel'); if (!panel || !this.st) return;
+      var self = this, html = '';
+      switch (this.tab) {
+        case 'join': html = this.joinHTML(); break;
+        case 'rules': html = this.rulesPanel(); break;
+        case 'results': html = this.resultsHTML(); break;
+        case 'theory': html = this.theoryHTML(); break;
+        case 'data': html = this.dataHTML(); break;
+        default: html = this.boardHTML();
+      }
+      keepFocus(function () {
+        panel.innerHTML = html;
+        Object.keys(self.drafts).forEach(function (id) { var inp = document.getElementById(id); if (inp) inp.value = self.drafts[id]; });
+      });
+      tick();
+    },
+
+    joinHTML: function () {
+      var st = this.st, link = this.teamLink(), g = st.cur >= 0 ? st.games[st.cur] : null;
+      var k = g && g.status === 'live' ? st.cur : st.games.length, pairs = E.pairings(st.teams.length, k);
+      var on = st.teams.filter(function (t) { return t.dev; }).length;
+      var cards = st.teams.map(function (t) {
+        var pr = pairs.filter(function (p) { return p.firm === t.id || p.supplier === t.id; })[0];
+        var role = pr ? (pr.firm === t.id ? 'firm' : 'supplier') : '';
+        return '<div class="teamcard' + (t.dev ? ' on' : '') + '"><div class="spread"><span class="name">' + esc(t.name) + '</span>' +
+          (role ? '<span class="chip ' + roleCls(role) + '">' + roleName(role) + '</span>' : '') + '</div>' +
+          '<div class="small ' + (t.dev ? '' : 'muted') + '">' + (t.dev ? '<span style="color:var(--ok);font-weight:700">Connected</span> at ' + hhmm(t.devAt) : 'Waiting for a device') + '</div>' +
+          '<div class="row ctl"><button class="btn sm" data-act="rename" data-t="' + t.id + '">Rename</button>' + (t.dev ? '<button class="btn sm" data-act="release" data-t="' + t.id + '">Release device</button>' : '') + '</div></div>';
+      }).join('');
+      return '<div class="stack"><div class="joingrid">' +
+        '<div class="qr">' + qrSVG(link) + '</div>' +
+        '<div class="stack"><p class="eyebrow">Join with one device per team</p>' +
+        '<h2 style="font-size:var(--step-3);font-weight:800">Scan the code, then pick your team</h2>' +
+        '<p>Or open this address and enter the session code:</p><div class="linkbox">' + esc(link.split('#')[0]) + '</div>' +
+        '<div><span class="muted small">Session code</span><div class="bigcode">' + esc(st.sid) + '</div></div>' +
+        '<p class="muted">' + on + ' of ' + st.teams.length + ' teams connected.</p></div></div>' +
+        '<section class="stack"><div class="spread"><h2>Teams for Game ' + (k + 1) + '</h2>' +
+        '<button class="btn ctl ' + (on === st.teams.length ? 'primary' : '') + '" data-act="tab" data-tab="rules">Next: the rules</button></div>' +
+        '<div class="teamgrid">' + cards + '</div></section></div>';
+    },
+    teamLink: function () {
+      var u = location.href.split('#')[0], h = 's=' + this.st.sid;
+      if (this.st.db && RT.norm(this.st.db) !== RT.norm(CFG.databaseURL)) h += '&db=' + encodeURIComponent(this.st.db);
+      return u + '#' + h;
+    },
+    rulesPanel: function () {
+      var st = this.st, live = st.cur >= 0 && st.games[st.cur].status === 'live';
+      var p = live ? st.games[st.cur].params : st.params, gameNo = live ? st.cur + 1 : st.games.length + 1;
+      return '<div class="stack"><section class="panel" style="padding:clamp(18px,3vw,36px)">' + rulesHTML(p, st.stakes, gameNo) + '</section>' +
+        '<div class="row ctl"><button class="btn primary" data-act="tab" data-tab="board">Go to the board</button>' +
+        (live ? '' : '<button class="btn" data-act="edit-rules">Change the rules for Game ' + gameNo + '</button>') + '</div></div>';
+    },
+    boardHTML: function () {
+      var st = this.st, self = this;
+      var G = st.cur >= 0 ? st.games[st.cur] : null;
+      var nextK = st.games.length, nextPairs = E.pairings(st.teams.length, nextK);
+      var tn = function (id) { return esc(st.teams[id - 1].name); };
+      var head, lanes = '';
+      if (!G) {
+        head = '<div class="gamehead"><div><p class="eyebrow">Ready</p><h2>Game 1</h2><p class="muted">' + nextPairs.map(function (p) { return 'Firm ' + tn(p.firm) + ' vs Supplier ' + tn(p.supplier); }).join(' · ') + '</p></div>' +
+          '<div class="row ctl"><button class="btn primary big" data-act="start">Start Game 1</button></div></div>';
+        lanes = '<section class="panel">' + scheduleHTML(st.params, 0, 0) + '</section>';
+        return '<div class="stack">' + head + lanes + '</div>';
+      }
+      var live = G.status === 'live', show = this.show || !live;
+      var doneN = G.negs.filter(E.ended).length;
+      head = '<div class="gamehead"><div><p class="eyebrow">' + (live ? 'In play · ' + doneN + ' of ' + G.negs.length + ' negotiations finished' : 'Complete') + '</p>' +
+        '<h2>Game ' + (G.k + 1) + '</h2><p class="muted">' + G.params.rounds + ' rounds · surplus shrinks ' + G.params.shrink + '% after each rejection</p></div>' +
+        '<div class="row ctl">' +
+        (live ? '<button class="btn" data-act="show" aria-pressed="' + this.show + '">' + (this.show ? 'Hide amounts' : 'Show amounts') + '</button>' : '') +
+        (live && st.mode === 'live' ? '<button class="btn" data-act="manual" aria-pressed="' + !!this.manualOn + '">' + (this.manualOn ? 'Hide typing' : 'Type for a team') + '</button>' : '') +
+        '<button class="btn" data-act="undo"' + (this.undo.length ? '' : ' disabled') + '>Undo last change</button>' +
+        (live ? '' : '<button class="btn" data-act="tab" data-tab="results">See results</button><button class="btn primary" data-act="start">Start Game ' + (nextK + 1) + '</button>') +
+        '</div></div>';
+      if (!live) {
+        var met = {};
+        st.games.forEach(function (g0) { g0.negs.forEach(function (n0) { met[Math.min(n0.firm, n0.supplier) + '-' + Math.max(n0.firm, n0.supplier)] = true; }); });
+        var fresh = nextPairs.every(function (p0) { return !met[Math.min(p0.firm, p0.supplier) + '-' + Math.max(p0.firm, p0.supplier)]; });
+        head += '<p class="msg info ctl">Game ' + (nextK + 1) + ' swaps roles' + (fresh ? ' and gives every team a new partner' : '; some teams meet a partner they have already played') + ': ' +
+          nextPairs.map(function (p) { return 'Firm ' + tn(p.firm) + ' vs Supplier ' + tn(p.supplier); }).join(' · ') + '.</p>';
+      }
+      lanes = G.negs.map(function (N) {
+        var p = G.params, pie = E.pie(p, N.round), prop = E.proposer(p, N.round), resp = E.other(prop);
+        var what = '', clockEl = '', manual = '';
+        var typing = st.mode !== 'live' || self.manualOn;
+        if (N.phase === 'propose') {
+          what = 'Round ' + N.round + ' · <span class="money">' + money(pie) + '</span> · <span class="rw ' + roleCls(prop) + '">' + roleName(prop) + '</span> proposing';
+          clockEl = '<span class="clock" data-since="' + N.since + '" data-limit="90"></span>';
+          if (typing) manual = '<div class="manual ctl"><label>Supplier gets ($)<input type="text" inputmode="decimal" id="mo-' + N.i + '" autocomplete="off" placeholder="from the slip"></label>' +
+            '<button class="btn sm" data-act="offer" data-i="' + N.i + '">Record ' + esc(st.teams[E.teamOf(N, prop) - 1].name) + '’s proposal</button>' +
+            '<span class="small muted">The Firm gets the rest of ' + money(pie) + '.</span></div>';
+        } else if (N.phase === 'respond') {
+          var h = N.hist[N.hist.length - 1];
+          what = 'Round ' + N.round + ' · <span class="money">' + money(pie) + '</span> · <span class="rw ' + roleCls(resp) + '">' + roleName(resp) + '</span> answering' +
+            (show ? ' <span class="muted money" style="font-weight:500">(Firm ' + money(h.firm) + ' · Supplier ' + money(h.sup) + ')</span>' : '');
+          clockEl = '<span class="clock" data-since="' + N.since + '" data-limit="60"></span>';
+          if (typing) manual = '<div class="manual ctl"><span class="small muted">Record ' + esc(st.teams[E.teamOf(N, resp) - 1].name) + '’s answer:</span>' +
+            '<button class="btn sm ok" data-act="acc" data-i="' + N.i + '">Accept</button><button class="btn sm bad" data-act="rej" data-i="' + N.i + '">Reject</button></div>';
+        } else if (N.phase === 'deal') {
+          what = '<span class="outcome deal">Contract signed in round ' + N.out.r + '</span>' + (show ? ' <span class="money">· Firm ' + money(N.out.firm) + ' · Supplier ' + money(N.out.sup) + '</span>' : '');
+        } else {
+          what = '<span class="outcome nodeal">No contract</span> <span class="muted">· both get $0</span>';
+        }
+        return '<article class="lane" aria-label="Negotiation ' + (N.i + 1) + '">' +
+          '<div class="party"><span class="who firm">Firm</span><b>' + tn(N.firm) + '</b>' + (show && N.out ? '<span class="earn">' + money(N.out.firm) + '</span>' : '') + '</div>' +
+          '<div class="mid"><div class="status-line"><span class="what">' + what + '</span>' + clockEl + '</div>' +
+          laneTrack(G, N, show) + stepsHTML(G, N) + (live ? manual : '') + '</div>' +
+          '<div class="party right"><span class="who sup">Supplier</span><b>' + tn(N.supplier) + '</b>' + (show && N.out ? '<span class="earn">' + money(N.out.sup) + '</span>' : '') + '</div>' +
+          '</article>';
+      }).join('');
+      var logItems = st.log.slice(-8).reverse().map(function (l) { return '<li><span class="num muted">' + hhmm(l.t) + '</span> ' + esc(l.m) + '</li>'; }).join('');
+      return '<div class="stack">' + head + '<div class="lanes">' + lanes + '</div>' +
+        '<details class="panel ctl" id="d-activity"' + (this.open['d-activity'] ? ' open' : '') + '><summary style="cursor:pointer;font-weight:600">Activity</summary><ul class="small" style="margin:10px 0 0;padding-left:1.1em;display:grid;gap:4px">' + (logItems || '<li class="muted">Nothing yet.</li>') + '</ul></details></div>';
+    },
+
+    resultsHTML: function () {
+      var st = this.st, self = this;
+      if (!st.games.length) return '<div class="panel stack"><h2>No results yet</h2><p class="muted">Results appear here as soon as the first game starts.</p></div>';
+      var views = st.games.map(function (G) { return ['g' + G.k, 'Game ' + (G.k + 1)]; });
+      if (st.games.length > 1) views.push(['all', 'All games']);
+      if (!views.some(function (v) { return v[0] === self.resView; })) this.resView = views[views.length - 1][0];
+      var games = this.resView === 'all' ? st.games : st.games.filter(function (G) { return 'g' + G.k === self.resView; });
+      var rows = []; games.forEach(function (G) { G.negs.forEach(function (N) { rows.push(negSummary(G, N)); }); });
+      var S = statsFor(rows), p = games[0].params, spe = E.spe(p)[0], base = p.pie;
+      var fp = S.firstProposer, rp = E.other(fp);
+      var chips = views.map(function (v) { return '<button class="btn sm' + (self.resView === v[0] ? ' primary' : '') + '" data-act="res-view" data-v="' + v[0] + '">' + v[1] + '</button>'; }).join('');
+      var tr = rows.map(function (x) {
+        var N = x.N;
+        return '<tr><td>G' + (x.G.k + 1) + '</td><td>' + esc(st.teams[N.firm - 1].name) + '</td><td>' + esc(st.teams[N.supplier - 1].name) + '</td>' +
+          '<td class="n">' + (x.first ? money(x.first.sup) : '—') + '</td><td class="n">' + (x.first ? pct(100 * x.first.sup / x.first.pie) : '—') + '</td>' +
+          '<td>' + (x.done ? (x.deal ? 'Contract, round ' + x.round : 'No contract') : 'Round ' + x.round + '…') + '</td>' +
+          '<td class="n">' + (x.done ? money(x.firm) : '—') + '</td><td class="n">' + (x.done ? money(x.sup) : '—') + '</td><td class="n">' + (x.done ? money(x.lost) : '—') + '</td></tr>';
+      }).join('');
+      var mixed = games.some(function (G) { return G.params.pie !== p.pie || G.params.rounds !== p.rounds || G.params.shrink !== p.shrink || G.params.first !== p.first; });
+      return '<div class="stack">' +
+        '<div class="spread"><div><p class="eyebrow">Results</p><h2 style="font-size:var(--step-3);font-weight:800">What the contracts looked like</h2></div><div class="row">' + chips + '</div></div>' +
+        (mixed ? '<p class="msg info">These games used different rules; the theory line uses the rules of the first game shown.</p>' : '') +
+        '<div class="stats">' +
+        '<div class="stat"><span class="k">Average first proposal to the ' + roleName(rp) + '</span><span class="v">' + (S.firstAvg == null ? '—' : money(S.firstAvg)) + '</span><span class="k">' + (S.firstAvg == null ? '' : pct(100 * S.firstAvg / base) + ' of the surplus') + '</span></div>' +
+        '<div class="stat"><span class="k">Theory (subgame perfect)</span><span class="v">' + money(spe.give) + '</span><span class="k">' + pct(100 * spe.give / base) + ', accepted at once</span></div>' +
+        '<div class="stat"><span class="k">Contracts signed in round 1</span><span class="v">' + S.r1 + ' of ' + S.n + '</span><span class="k">' + S.nodeal + ' ended with no contract</span></div>' +
+        '<div class="stat"><span class="k">Surplus lost to delay</span><span class="v">' + money(S.lost) + '</span><span class="k">' + (S.fin ? pct(100 * S.lost / (S.fin * base)) + ' of what was on the table' : '') + '</span></div>' +
+        '</div>' +
+        '<section class="panel stack"><div class="spread"><h2>How each contract split the surplus</h2><div class="legend"><span><i style="background:var(--firm)"></i>Firm</span><span><i style="background:var(--sup)"></i>Supplier</span><span><i style="background:repeating-linear-gradient(135deg,var(--lost) 0 3px,transparent 3px 6px)"></i>Lost to delay</span></div></div>' +
+        outcomeChart(rows, st.teams) + '</section>' +
+        '<section class="panel stack"><h2>First proposals</h2>' + firstOfferChart(rows, st.teams) + '</section>' +
+        '<div class="tablewrap"><table><thead><tr><th>Game</th><th>Firm</th><th>Supplier</th><th class="n">First offer to ' + roleName(rp) + '</th><th class="n">Share</th><th>Outcome</th><th class="n">Firm</th><th class="n">Supplier</th><th class="n">Lost</th></tr></thead><tbody>' + tr + '</tbody></table></div>' +
+        '</div>';
+    },
+
+    theoryParams: function () { var st = this.st; return st.games.length ? st.games[0].params : st.params; },
+    theoryHTML: function () {
+      var st = this.st, p = this.theoryParams(), rows = E.spe(p), T = p.rounds, step = this.step, self = this;
+      var shrink = this.wiShrink || p.shrink;
+      var trs = rows.map(function (x) {
+        var shown = x.r > T - step, fresh = x.r === T - step + 1, resp = E.other(x.proposer);
+        var alt = x.r === T ? '$0 (no contract)' : money(x.give);
+        return '<tr class="' + (shown ? (fresh ? 'reveal' : '') : 'pending') + '"><td class="n">' + x.r + '</td><td class="n">' + money(x.pie) + '</td><td><span class="rw ' + roleCls(x.proposer) + '">' + roleName(x.proposer) + '</span></td>' +
+          '<td class="n">' + (shown ? alt : '') + '</td><td class="n">' + (shown ? money(x.give) + ' to the ' + roleName(resp) : '') + '</td><td class="n">' + (shown ? money(x.keep) : '') + '</td></tr>';
+      }).join('');
+      var say;
+      if (step === 0) say = 'Start at the end. Press “Next step” to work backwards from round ' + T + '.';
+      else {
+        var x = rows[T - step], resp = E.other(x.proposer);
+        say = x.r === T
+          ? 'Round ' + T + ' is take-it-or-leave-it: if the ' + roleName(resp) + ' says no, both get $0. So the ' + roleName(x.proposer) + ' can offer (almost) nothing and keep ' + money(x.keep) + '.'
+          : 'In round ' + x.r + ' the ' + roleName(resp) + ' can say no and get ' + money(x.give) + ' as proposer in round ' + (x.r + 1) + '. So the ' + roleName(x.proposer) + ' offers exactly that and keeps the rest of ' + money(x.pie) + ': ' + money(x.keep) + '.';
+        if (x.r === 1) {
+          var obs = [];
+          st.games.forEach(function (G) { G.negs.forEach(function (N) { if (N.hist[0]) obs.push(N.hist[0].sup); }); });
+          say += ' Agreement is immediate: nothing is lost to delay.' + (obs.length ? ' Your classmates’ first proposals offered the Supplier ' + money(obs.reduce(function (a, b) { return a + b; }, 0) / obs.length) + ' on average.' : '');
+        }
+      }
+      var shrinkOpts = [5, 10, 20, 30, 50].concat([p.shrink]).filter(function (v, j, a) { return a.indexOf(v) === j; }).sort(function (a, b) { return a - b; })
+        .map(function (v) { return '<option value="' + v + '"' + (v === shrink ? ' selected' : '') + '>' + v + '% per rejection</option>'; }).join('');
+      var fr = E.proposer(p, 1);
+      return '<div class="stack">' +
+        '<div><p class="eyebrow">Theory</p><h2 style="font-size:var(--step-3);font-weight:800">Solve it backwards</h2><p class="muted">Each side cares only about its own money and expects the other to do the same.</p></div>' +
+        '<section class="panel stack"><div class="tablewrap"><table><thead><tr><th class="n">Round</th><th class="n">Surplus</th><th>Proposes</th><th class="n">Responder gets by saying no</th><th class="n">Proposal</th><th class="n">Proposer keeps</th></tr></thead><tbody>' + trs + '</tbody></table></div>' +
+        '<p style="font-size:var(--step-1)">' + say + '</p>' +
+        '<div class="row"><button class="btn primary" data-act="bi-next"' + (step >= T ? ' disabled' : '') + '>Next step</button><button class="btn" data-act="bi-all"' + (step >= T ? ' disabled' : '') + '>Show all</button><button class="btn ghost" data-act="bi-reset">Reset</button></div></section>' +
+        '<section class="panel stack"><div class="spread"><div><h2>Who has the last word?</h2><p class="muted small">Share kept by the ' + roleName(fr) + ' (who proposes first) when both sides play the theory, by the number of rounds before the contract is lost.</p></div>' +
+        '<label class="field" style="min-width:200px">Shrink<select id="wi-shrink">' + shrinkOpts + '</select></label></div>' +
+        lastWordChart(T, shrink, fr) +
+        '<p class="small muted">With ' + T + ' rounds and a ' + shrink + '% shrink the ' + roleName(fr) + ' keeps ' + pct(100 * E.firstShare(T, shrink)) + '. One round more or less flips the advantage to whoever proposes last. The smaller the shrink, the more the last word is worth.</p></section>' +
+        '</div>';
+    },
+    dataHTML: function () {
+      var st = this.st, csv = csvFor(st), canSave = !IN_VIEWER || !!DL;
+      var log = st.log.slice().reverse().map(function (l) { return '<li><span class="num muted">' + hhmm(l.t) + '</span> ' + esc(l.m) + '</li>'; }).join('');
+      return '<div class="stack">' +
+        '<div><p class="eyebrow">Data</p><h2 style="font-size:var(--step-3);font-weight:800">Every proposal and answer</h2><p class="muted">One row per proposal. Amounts in dollars. Keep a copy before you delete the session.</p></div>' +
+        '<section class="panel stack"><div class="row"><button class="btn primary" data-act="copy-csv">Copy CSV</button>' + (canSave ? '<button class="btn" data-act="dl-csv">Download CSV</button>' : '') +
+        '<button class="btn" data-act="copy-json">Copy full backup</button>' + (canSave ? '<button class="btn" data-act="dl-json">Download backup</button>' : '') + '</div>' +
+        '<textarea readonly rows="10" id="csvout" aria-label="CSV data">' + esc(csv) + '</textarea></section>' +
+        '<section class="panel stack"><h2>Activity log</h2><ul class="small" style="margin:0;padding-left:1.1em;display:grid;gap:4px;max-height:280px;overflow:auto">' + (log || '<li class="muted">Nothing yet.</li>') + '</ul></section>' +
+        '<section class="panel stack ctl"><h2>Session</h2><p class="small muted">Code <b class="num">' + esc(st.sid) + '</b> · ' + (st.mode === 'live' ? 'live, database ' + esc(st.db) : 'this laptop only') + ' · created ' + new Date(st.created).toLocaleString() + '</p>' +
+        '<div class="row"><button class="btn bad" data-act="reset">Delete this session</button></div></section>' +
+        '</div>';
+    }
+  };
+
+  /* -------------------------------------------------------------- team device */
+  var T = {
+    sid: '', base: '', team: 0, dev: '', st: null, sub: null, net: 'connecting', missing: false, pending: null,
+    turn: '', sound: true, actx: null, wake: null, draft: null, reviewing: false, confirmKind: '',
+
+    entry: function () {
+      var can = !!RT.norm(CFG.databaseURL);
+      app.innerHTML = '<main class="team"><div class="card"><p class="eyebrow">ELA #2 · The Shrinking Contract</p><h2>Join your team</h2>' +
+        (can ? '<form id="joinform" class="stack" novalidate><label class="field">Session code <span class="hint">It is on the screen at the front.</span><input type="text" id="j-code" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" style="font-family:var(--font-num);font-size:var(--step-2);letter-spacing:.12em;text-transform:uppercase"></label><button class="btn primary big" type="submit">Continue</button></form>'
+          : '<p>Scan the QR code on the screen, or open the link your instructor shared. This copy of the page is not connected to a session database.</p>') +
+        '</div></main>';
+      var f = document.getElementById('joinform');
+      if (f) f.addEventListener('submit', function (ev) {
+        ev.preventDefault();
+        var code = document.getElementById('j-code').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (code.length < 4) { toast('Type the code shown on the screen.'); return; }
+        location.hash = 's=' + code;
+      });
+    },
+    start: function (sid, base) {
+      this.stop();
+      this.sid = sid; this.base = base; this.dev = deviceId();
+      var saved = LS.get('ela2.team.' + sid); this.team = saved && saved.team || 0;
+      this.st = null; this.missing = false; this.pending = null; this.turn = '';
+      if (!base) {
+        app.innerHTML = '<main class="team"><div class="card"><h2>This link is incomplete</h2><p>Scan the QR code on the screen again, or ask your instructor for the team link.</p></div></main>';
+        return;
+      }
+      this.render();
+      var self = this;
+      this.sub = RT.listen(base, CFG.basePath + '/' + sid + '/state', function (d) { self.onState(d); }, function (s) { self.net = s === 'open' ? 'live' : s === 'denied' ? 'denied' : 'retrying'; self.renderFoot(); });
+      clearTimeout(this.missTimer);
+      this.missTimer = setTimeout(function () { if (!self.st) { self.missing = true; self.render(); } }, 9000);
+      if (this.team) this.hello();
+    },
+    stop: function () { if (this.sub) this.sub.close(); this.sub = null; clearTimeout(this.missTimer); },
+    onState: function (d) {
+      if (!d || !d.json) { if (d === null) { this.missing = true; this.render(); } return; }
+      var st; try { st = JSON.parse(d.json); } catch (e) { return; }
+      this.st = st; this.missing = false;
+      if (this.team && (!st.teams[this.team - 1])) { this.team = 0; }
+      var key = this.turnKey();
+      if (key !== this.turn) {
+        var mine = this.myTurn();
+        this.turn = key; this.pending = null; this.draft = null; this.reviewing = false; this.confirmKind = '';
+        if (mine) this.beep();
+      }
+      this.render();
+    },
+    turnKey: function () {
+      var st = this.st; if (!st || !this.team) return '';
+      var G = st.cur >= 0 ? st.games[st.cur] : null, f = E.find(G, this.team);
+      if (!f) return 'g' + st.cur;
+      return 'g' + st.cur + '-' + f.N.i + '-' + f.N.round + '-' + f.N.phase;
+    },
+    myTurn: function () {
+      var st = this.st; if (!st || !this.team) return false;
+      var G = st.cur >= 0 ? st.games[st.cur] : null, f = E.find(G, this.team);
+      if (!f || !G || G.status !== 'live' || E.ended(f.N)) return false;
+      var prop = E.proposer(G.params, f.N.round);
+      return f.N.phase === 'propose' ? prop === f.role : E.other(prop) === f.role;
+    },
+    captain: function () { var t = this.st && this.st.teams[this.team - 1]; return !!(t && t.dev === this.dev); },
+    hello: function () {
+      var self = this;
+      RT.post(this.base, CFG.basePath + '/' + this.sid + '/inbox', { k: 'hello', team: this.team, dev: this.dev, ts: now() })
+        .catch(function () { setTimeout(function () { if (self.team) self.hello(); }, 3000); });
+    },
+    pick: function (t) {
+      var self = this, name = this.st.teams[t - 1].name;
+      openModal('<h2>Are you ' + esc(name) + '?</h2><p>This device will make your team’s decisions for the rest of the session. Only one device per team.</p>' +
+        '<div class="row"><button class="btn primary" data-m="yes" autofocus>Yes, we are ' + esc(name) + '</button><button class="btn" data-m="close">Back</button></div>', function (a) {
+        if (a !== 'yes') return;
+        closeModal();
+        self.unlockAudio();
+        self.team = t; LS.set('ela2.team.' + self.sid, { team: t });
+        self.hello(); self.keepAwake();
+        self.turn = ''; self.onState({ json: JSON.stringify(self.st) });
+      });
+    },
+    leave: function () {
+      var self = this;
+      openModal('<h2>Switch team?</h2><p>Only do this if you picked the wrong team. Your instructor may need to release your old team’s device.</p><div class="row"><button class="btn bad" data-m="yes">Switch team</button><button class="btn" data-m="close" autofocus>Stay</button></div>', function (a) {
+        if (a !== 'yes') return; closeModal(); self.team = 0; LS.del('ela2.team.' + self.sid); self.render();
+      });
+    },
+    send: function (kind, extra) {
+      var st = this.st, G = st.games[st.cur], f = E.find(G, this.team), self = this;
+      if (!f) return;
+      var msg = Object.assign({ k: kind, team: this.team, dev: this.dev, g: st.cur, i: f.N.i, r: f.N.round, ts: now() }, extra);
+      this.pending = { key: this.turnKey(), at: now(), msg: msg, err: false };
+      this.render();
+      RT.post(this.base, CFG.basePath + '/' + this.sid + '/inbox', msg).then(function () { self.render(); }, function () {
+        if (self.pending && self.pending.msg === msg) { self.pending.err = true; self.render(); }
+      });
+      setTimeout(function () { if (self.pending && self.pending.msg === msg) self.render(); }, 9000);
+    },
+    resend: function () {
+      if (!this.pending) return;
+      var self = this, msg = this.pending.msg; this.pending.at = now(); this.pending.err = false; this.render();
+      RT.post(this.base, CFG.basePath + '/' + this.sid + '/inbox', msg).catch(function () { if (self.pending) { self.pending.err = true; self.render(); } });
+    },
+    unlockAudio: function () {
+      try { if (!this.actx) this.actx = new (window.AudioContext || window.webkitAudioContext)(); if (this.actx.state === 'suspended') this.actx.resume(); } catch (e) { this.actx = null; }
+    },
+    beep: function () {
+      if (!this.sound) return;
+      try {
+        var a = this.actx; if (!a) return;
+        var o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
+        o.type = 'sine'; o.frequency.setValueAtTime(660, t); o.frequency.setValueAtTime(880, t + .12);
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .32);
+        o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + .34);
+      } catch (e) { /* no sound */ }
+      try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { /* ignore */ }
+    },
+    keepAwake: function () {
+      var self = this;
+      try { if (navigator.wakeLock && !this.wake) navigator.wakeLock.request('screen').then(function (w) { self.wake = w; w.addEventListener('release', function () { self.wake = null; }); }, function () { }); } catch (e) { /* optional */ }
+    },
+
+    act: function (a, el) {
+      if (a === 'pick') { this.pick(parseInt(el.getAttribute('data-t'), 10)); return; }
+      if (a === 'switch') { this.leave(); return; }
+      if (a === 'rules') {
+        var st = this.st, G = st.cur >= 0 ? st.games[st.cur] : null, p = G && G.status === 'live' ? G.params : st.params;
+        openModal(rulesHTML(p, st.stakes, 0) + '<button class="btn primary" data-m="close">Close</button>'); return;
+      }
+      if (a === 'sound') { this.sound = !this.sound; this.unlockAudio(); this.renderFoot(); return; }
+      if (a === 'claim') { this.unlockAudio(); this.hello(); toast('Asked to use this device. Your instructor may need to release the other one first.', 3800); return; }
+      if (a === 'review') {
+        var d = this.readDraft();
+        if (!d) { toast('Type an amount for one side. The two shares must add up to the surplus.', 3200); return; }
+        this.draft = d; this.reviewing = true; this.render(); return;
+      }
+      if (a === 'edit') { this.reviewing = false; this.render(); return; }
+      if (a === 'send-offer') { if (this.draft) this.send('offer', { sup: this.draft.sup }); return; }
+      if (a === 'ask-acc') { this.confirmKind = 'acc'; this.render(); return; }
+      if (a === 'ask-rej') { this.confirmKind = 'rej'; this.render(); return; }
+      if (a === 'back') { this.confirmKind = ''; this.render(); return; }
+      if (a === 'send-acc') { this.send('resp', { acc: true }); return; }
+      if (a === 'send-rej') { this.send('resp', { acc: false }); return; }
+      if (a === 'resend') { this.resend(); return; }
+    },
+    readDraft: function () {
+      var info = this.ctx(); if (!info) return null;
+      var pie = info.pie, fi = document.getElementById('o-firm'), si = document.getElementById('o-sup');
+      var s = parseMoney(si && si.value), f = parseMoney(fi && fi.value);
+      if (isNaN(s) && isNaN(f)) return null;
+      if (isNaN(s)) s = pie - f;
+      if (s < 0 || s > pie) return null;
+      if (!isNaN(f) && f + s !== pie) return null;
+      return { sup: s, firm: pie - s };
+    },
+    ctx: function () {
+      var st = this.st; if (!st || !this.team) return null;
+      var G = st.cur >= 0 ? st.games[st.cur] : null, f = E.find(G, this.team);
+      if (!G || !f) return null;
+      var N = f.N, p = G.params, pie = E.pie(p, N.round), prop = E.proposer(p, N.round);
+      var partner = f.role === 'firm' ? N.supplier : N.firm;
+      return { G: G, N: N, p: p, role: f.role, pie: pie, prop: prop, partner: partner, partnerName: st.teams[partner - 1].name };
+    },
+    onInput: function (el) {
+      var info = this.ctx(); if (!info) return;
+      var pie = info.pie, fi = document.getElementById('o-firm'), si = document.getElementById('o-sup');
+      if (el.id === 'o-sup') { var s = parseMoney(el.value); if (!isNaN(s) && s <= pie) fi.value = plain(pie - s); else if (el.value.trim() === '') fi.value = ''; }
+      else if (el.id === 'o-firm') { var f = parseMoney(el.value); if (!isNaN(f) && f <= pie) si.value = plain(pie - f); else if (el.value.trim() === '') si.value = ''; }
+      this.preview();
+    },
+    preview: function () {
+      var info = this.ctx(); if (!info) return;
+      var pie = info.pie, si = document.getElementById('o-sup'), fi = document.getElementById('o-firm');
+      var bar = document.getElementById('o-bar'), pctEl = document.getElementById('o-pct');
+      if (!si || !fi || !bar) return;
+      var s = parseMoney(si.value), f = parseMoney(fi.value);
+      var ok = !isNaN(s) && !isNaN(f) && s + f === pie;
+      bar.innerHTML = ok ? '<div class="fill" style="width:' + (100 * pie / info.p.pie).toFixed(3) + '%"><div class="seg firm" style="width:' + (100 * f / pie).toFixed(3) + '%"></div><div class="seg sup" style="width:' + (100 * s / pie).toFixed(3) + '%"></div></div>' : '';
+      if (pctEl) pctEl.textContent = ok ? 'Firm ' + pct(100 * f / pie) + ' · Supplier ' + pct(100 * s / pie) + ' of ' + money(pie) : 'The two shares must add up to ' + money(pie) + '.';
+    },
+
+    render: function () {
+      var st = this.st;
+      if (!st) {
+        app.innerHTML = '<main class="team"><div class="card"><p class="eyebrow">ELA #2 · The Shrinking Contract</p>' +
+          (this.missing ? '<h2>Session not found</h2><p>Check the code <b class="num">' + esc(this.sid) + '</b> against the screen, or scan the QR code again. If it is right, the instructor’s screen may not be open yet.</p><button class="btn" data-act="t-reload">Try again</button>'
+            : '<div class="wait"><span class="pulse"></span><div><h2>Connecting…</h2><p class="muted">Session <span class="num">' + esc(this.sid) + '</span></p></div></div>') +
+          '</div></main>';
+        return;
+      }
+      if (!this.team) { this.lastSig = ''; this.renderPicker(); return; }
+      /* skip redraws caused by other negotiations: nothing this team sees has changed */
+      var sig = this.signature();
+      if (sig === this.lastSig && document.querySelector('main.team')) { this.renderFoot(); return; }
+      this.lastSig = sig;
+      var self = this;
+      keepFocus(function () { app.innerHTML = self.dashHTML(); });
+      var fi = document.getElementById('o-firm'), si = document.getElementById('o-sup');
+      if (fi && si && this.draftVals && this.draftVals.key === this.turn) { fi.value = this.draftVals.f; si.value = this.draftVals.s; }
+      if (fi && si) this.preview();
+      this.renderFoot(); tick();
+    },
+    signature: function () {
+      var st = this.st, G = st.cur >= 0 ? st.games[st.cur] : null, f = E.find(G, this.team);
+      var pend = this.pending ? [this.pending.key, this.pending.err, now() - this.pending.at > 8000] : null;
+      return JSON.stringify([st.cur, G && G.status, f && f.N, st.teams, st.games.length, st.params, st.stakes, E.earnings(st, this.team),
+        this.reviewing, this.draft, this.confirmKind, pend, this.turn]);
+    },
+    renderPicker: function () {
+      var st = this.st, G = st.cur >= 0 && st.games[st.cur].status === 'live' ? st.games[st.cur] : null;
+      var k = G ? st.cur : st.games.length, pairs = E.pairings(st.teams.length, k);
+      var btns = st.teams.map(function (t) {
+        var pr = pairs.filter(function (p) { return p.firm === t.id || p.supplier === t.id; })[0], role = pr ? (pr.firm === t.id ? 'firm' : 'supplier') : '';
+        return '<button class="pick" data-act="pick" data-t="' + t.id + '"><b>' + esc(t.name) + '</b><span class="small">' + (role ? '<span class="rw ' + roleCls(role) + '">' + roleName(role) + '</span> in Game ' + (k + 1) : '') + '</span>' +
+          '<span class="small muted">' + (t.dev ? 'A device is already connected' : 'Free') + '</span></button>';
+      }).join('');
+      app.innerHTML = '<main class="team"><div class="card"><p class="eyebrow">Session <span class="num">' + esc(this.sid) + '</span></p><h2>Which team are you?</h2>' +
+        '<p class="muted">Pick the number your instructor gave your team. One device per team.</p><div class="picker">' + btns + '</div></div><div class="footer" id="foot"></div></main>';
+      this.renderFoot();
+    },
+    renderFoot: function () {
+      var el = document.getElementById('foot'); if (!el) return;
+      var map = { live: 'Connected', retrying: 'Reconnecting…', denied: 'Access denied', connecting: 'Connecting…' };
+      el.innerHTML = '<span><span class="dot" style="color:' + (this.net === 'live' ? 'var(--ok)' : 'var(--warn)') + '"></span> ' + (map[this.net] || 'Connecting…') + ' · <span class="num">' + esc(this.sid) + '</span></span>' +
+        (this.team ? '<span class="row" style="gap:6px"><button class="btn sm ghost" data-act="rules">Rules</button><button class="btn sm ghost" data-act="sound">' + (this.sound ? 'Sound on' : 'Sound off') + '</button><button class="btn sm ghost" data-act="switch">Switch team</button></span>' : '');
+    },
+    dashHTML: function () {
+      var st = this.st, me = st.teams[this.team - 1], cap = this.captain();
+      var G = st.cur >= 0 ? st.games[st.cur] : null, info = this.ctx();
+      var earned = E.earnings(st, this.team);
+      var head = '<div class="teamhead"><h1>' + esc(me.name) + '</h1><span class="chip">Earned <span class="money">' + money(earned) + '</span></span></div>';
+      var follower = me.dev && !cap;
+      var who = follower ? '<p class="msg info">Another device is registered for ' + esc(me.name) + '. This screen follows along but cannot send decisions. <button class="btn sm" data-act="claim">Use this device instead</button></p>'
+        : (!me.dev ? '<p class="msg info">Registering this device… It needs the instructor’s screen to be open.</p>' : '');
+      var body = '';
+      if (!G) {
+        var nextPairs = E.pairings(st.teams.length, st.games.length), pr = nextPairs.filter(function (p) { return p.firm === me.id || p.supplier === me.id; })[0];
+        var role = pr ? (pr.firm === me.id ? 'firm' : 'supplier') : 'firm', partner = pr ? (role === 'firm' ? pr.supplier : pr.firm) : 0;
+        body = this.roleBar(role, 'Game 1', partner) +
+          '<div class="card"><div class="wait"><span class="pulse"></span><div><h2>Get ready</h2><p class="muted">The instructor will start Game 1 shortly.</p></div></div>' +
+          '<p>You play the <b class="rw ' + roleCls(role) + '">' + roleName(role) + '</b>' + (partner ? ' against <b>' + esc(st.teams[partner - 1].name) + '</b>' : '') + '. Read the rules while you wait.</p></div>' +
+          '<div class="card">' + rulesHTML(st.params, st.stakes, 0) + '</div>';
+        return '<main class="team">' + head + who + body + '<div class="footer" id="foot"></div></main>';
+      }
+      if (!info) {
+        body = '<div class="card"><h2>You sit out this game</h2><p class="muted">Wait for the next one.</p></div>';
+        return '<main class="team">' + head + who + body + '<div class="footer" id="foot"></div></main>';
+      }
+      var N = info.N, p = info.p, role = info.role, opp = E.other(role);
+      body = this.roleBar(role, 'Game ' + (G.k + 1), info.partner);
+      var card = '';
+      var lastH = N.hist[N.hist.length - 1];
+      var nextPie = N.round < p.rounds ? E.pie(p, N.round + 1) : 0;
+      var ifRej = N.round < p.rounds
+        ? '<p class="ifreject">If this proposal is rejected: round ' + (N.round + 1) + ', the surplus falls to <b class="money">' + money(nextPie) + '</b> and the ' + roleName(E.proposer(p, N.round + 1)) + ' proposes.</p>'
+        : '<p class="ifreject final"><b>Last round.</b> If this proposal is rejected there is no contract: both sides get $0.</p>';
+      var pend = this.pending && this.pending.key === this.turn ? this.pending : null;
+      if (E.ended(N)) {
+        if (N.phase === 'deal') {
+          var mine = role === 'firm' ? N.out.firm : N.out.sup;
+          card = '<div class="card"><p class="eyebrow">Game ' + (G.k + 1) + ' · round ' + N.out.r + '</p><h2 style="color:var(--ok)">Contract signed</h2>' +
+            '<div class="offerline"><div class="f"><span class="k">Firm</span><span class="v">' + money(N.out.firm) + '</span></div><div class="s"><span class="k">Supplier</span><span class="v">' + money(N.out.sup) + '</span></div></div>' +
+            '<p>Your team earns <b class="money">' + money(mine) + '</b> in this game.' + (N.out.r > 1 ? ' Delay cost the two sides <b class="money">' + money(p.pie - E.pie(p, N.out.r)) + '</b> of surplus.' : '') + '</p></div>';
+        } else {
+          card = '<div class="card"><p class="eyebrow">Game ' + (G.k + 1) + '</p><h2 style="color:var(--bad)">No contract</h2><p>The proposal in round ' + p.rounds + ' was rejected. Both sides get $0 in this game, and the whole ' + money(p.pie) + ' is lost.</p></div>';
+        }
+        card += G.status === 'done'
+          ? '<div class="card"><h2>Game ' + (G.k + 1) + ' is over</h2><p class="muted">Results are on the screen. If there is another game, you will get a new partner and the other role.</p></div>'
+          : '<div class="card"><div class="wait"><span class="pulse"></span><p>Waiting for the other negotiations to finish.</p></div></div>';
+      } else if (N.phase === 'propose' && info.prop === role) {
+        if (!cap) card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + '</p><h2>Your turn to propose</h2><p class="muted">The registered device sends your proposal. Surplus on the table: <b class="money">' + money(info.pie) + '</b>.</p></div>';
+        else if (pend) card = this.pendingCard(pend, 'Proposal sent');
+        else if (this.reviewing && this.draft) {
+          card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + ' · check before sending</p><h2>Send this proposal to ' + esc(info.partnerName) + '?</h2>' +
+            '<div class="offerline"><div class="f"><span class="k">Firm gets</span><span class="v">' + money(this.draft.firm) + '</span></div><div class="s"><span class="k">Supplier gets</span><span class="v">' + money(this.draft.sup) + '</span></div></div>' +
+            ifRej + '<div class="actions"><button class="btn" data-act="edit">Change it</button><button class="btn primary" data-act="send-offer">Send proposal</button></div></div>';
+        } else {
+          /* no pre-filled split: a default number would anchor the proposal */
+          card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + '</p><h2>Your turn: propose a split of ' + money(info.pie) + '</h2>' +
+            '<p class="small muted">Type the amount for either side; the other side gets the rest.</p>' +
+            '<div class="split-in"><label class="firm" for="o-firm">Firm gets ($)<input type="text" inputmode="decimal" id="o-firm" autocomplete="off" placeholder="0"></label>' +
+            '<label class="sup" for="o-sup">Supplier gets ($)<input type="text" inputmode="decimal" id="o-sup" autocomplete="off" placeholder="0"></label></div>' +
+            '<div class="track" id="o-bar" style="height:30px"></div><p class="small muted" id="o-pct">The two shares must add up to ' + money(info.pie) + '.</p>' +
+            ifRej + '<button class="btn primary big wide" data-act="review">Review proposal</button></div>';
+        }
+      } else if (N.phase === 'propose') {
+        card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + '</p><div class="wait"><span class="pulse"></span><div><h2>Waiting for ' + esc(info.partnerName) + '</h2>' +
+          '<p class="muted">The ' + roleName(opp) + ' is preparing a proposal for <b class="money">' + money(info.pie) + '</b>.</p></div></div>' +
+          '</div>';
+      } else if (N.phase === 'respond' && info.prop !== role) {
+        if (!cap) card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + '</p><h2>' + esc(info.partnerName) + ' proposes</h2>' + this.offerLine(lastH) + '<p class="muted">The registered device sends your answer.</p></div>';
+        else if (pend) card = this.pendingCard(pend, 'Answer sent');
+        else if (this.confirmKind) {
+          var yes = this.confirmKind === 'acc', myShare = role === 'firm' ? lastH.firm : lastH.sup;
+          card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + ' · check before sending</p><h2>' + (yes ? 'Accept this proposal?' : 'Reject this proposal?') + '</h2>' + this.offerLine(lastH) +
+            '<p>' + (yes ? 'The contract is signed and your team earns <b class="money">' + money(myShare) + '</b> in this game.'
+              : (N.round < p.rounds ? 'The surplus falls to <b class="money">' + money(nextPie) + '</b> and your team proposes in round ' + (N.round + 1) + '.' : 'This is the last round: there will be no contract and both sides get $0.')) + '</p>' +
+            '<div class="actions"><button class="btn" data-act="back">Back</button><button class="btn ' + (yes ? 'ok' : 'bad') + '" data-act="' + (yes ? 'send-acc' : 'send-rej') + '">' + (yes ? 'Yes, accept' : 'Yes, reject') + '</button></div></div>';
+        } else {
+          card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + '</p><h2>' + esc(info.partnerName) + ' proposes</h2>' + this.offerLine(lastH) +
+            '<div class="track" style="height:30px"><div class="fill" style="width:' + (100 * info.pie / p.pie).toFixed(3) + '%"><div class="seg firm" style="width:' + (100 * lastH.firm / info.pie).toFixed(3) + '%"></div><div class="seg sup" style="width:' + (100 * lastH.sup / info.pie).toFixed(3) + '%"></div></div></div>' +
+            ifRej + '<div class="actions"><button class="btn bad big" data-act="ask-rej">Reject</button><button class="btn ok big" data-act="ask-acc">Accept</button></div></div>';
+        }
+      } else {
+        card = '<div class="card"><p class="eyebrow">Round ' + N.round + ' of ' + p.rounds + '</p><h2>Proposal sent</h2>' + this.offerLine(lastH) +
+          '<div class="wait"><span class="pulse"></span><p>Waiting for ' + esc(info.partnerName) + ' to accept or reject.</p></div></div>';
+      }
+      var hist = N.hist.filter(function (h) { return h.resp; }).map(function (h) {
+        return '<li><span class="r">R' + h.r + '</span><span><span class="rw ' + roleCls(h.by) + '">' + roleName(h.by) + '</span> proposed Firm <span class="money">' + money(h.firm) + '</span> · Supplier <span class="money">' + money(h.sup) + '</span></span><span class="' + (h.resp === 'accept' ? 'outcome deal' : 'outcome nodeal') + '">' + (h.resp === 'accept' ? 'Accepted' : 'Rejected') + '</span></li>';
+      }).join('');
+      var rejected = N.hist.filter(function (h) { return h.resp === 'reject'; }).length;
+      body += card +
+        (hist ? '<div class="card"><h3 style="font-size:var(--step-1)">This negotiation so far</h3><ul class="hist">' + hist + '</ul></div>' : '') +
+        '<div class="card"><h3 style="font-size:var(--step-1)">Surplus by round</h3>' + scheduleHTML(p, E.ended(N) ? 0 : N.round, rejected) + '</div>';
+      return '<main class="team">' + head + who + body + '<div class="footer" id="foot"></div></main>';
+    },
+    roleBar: function (role, game, partner) {
+      var st = this.st;
+      return '<div class="rolebar ' + roleCls(role) + '"><span class="small" style="opacity:.85">' + game + (partner ? ' · against ' + esc(st.teams[partner - 1].name) : '') + '</span><span class="big">You are the ' + roleName(role) + '</span></div>';
+    },
+    offerLine: function (h) {
+      return '<div class="offerline"><div class="f"><span class="k">Firm gets</span><span class="v">' + money(h.firm) + '</span></div><div class="s"><span class="k">Supplier gets</span><span class="v">' + money(h.sup) + '</span></div></div>';
+    },
+    pendingCard: function (pend, title) {
+      var late = now() - pend.at > 8000;
+      return '<div class="card"><h2>' + title + '</h2><div class="wait"><span class="pulse"></span><p>' +
+        (pend.err ? 'It did not go through. Check the connection and send it again.' : late ? 'Not confirmed yet. The instructor’s screen may be offline.' : 'Waiting for confirmation…') + '</p></div>' +
+        (pend.err || late ? '<button class="btn" data-act="resend">Send again</button>' : '') + '</div>';
+    }
+  };
+
+  /* -------------------------------------------------------------- live clocks */
+  function tick() {
+    var els = document.querySelectorAll('[data-since]'), t = now();
+    for (var j = 0; j < els.length; j++) {
+      var el = els[j], ms = t - parseInt(el.getAttribute('data-since'), 10), lim = parseInt(el.getAttribute('data-limit'), 10) || 0;
+      el.textContent = clock(ms);
+      el.classList.toggle('late', lim > 0 && ms > lim * 1000);
+    }
+  }
+  setInterval(tick, 1000);
+
+  /* --------------------------------------------------------------- dispatch */
+  var mode = '';
+  app.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-act]'); if (!b || b.disabled) return;
+    var a = b.getAttribute('data-act');
+    if (a === 'go-console') { if (!IN_VIEWER) history.replaceState(null, '', '#console'); mode = 'console'; C.start(); return; }
+    if (a === 'go-join') { history.replaceState(null, '', '#join'); mode = 'team'; T.entry(); return; }
+    if (a === 'resume') { C.resume(); return; }
+    if (a === 'discard') { C.discard(); return; }
+    if (a === 'testdb') { C.testDb(); return; }
+    if (a === 'takeover') { C.takeover(); return; }
+    if (a === 't-reload') { T.start(T.sid, T.base); return; }
+    if (mode === 'team') T.act(a, b); else C.act(a, b);
+  });
+  app.addEventListener('input', function (ev) {
+    var id = ev.target.id || '';
+    if (mode === 'team' && /^o-(firm|sup)$/.test(id)) {
+      T.onInput(ev.target);
+      var fi = document.getElementById('o-firm'), si = document.getElementById('o-sup');
+      T.draftVals = { key: T.turn, f: fi ? fi.value : '', s: si ? si.value : '' };
+    }
+    if (mode === 'console' && /^mo-\d+$/.test(id)) C.drafts[id] = ev.target.value;
+  });
+  app.addEventListener('toggle', function (ev) {
+    if (mode === 'console' && ev.target.id && ev.target.tagName === 'DETAILS') C.open[ev.target.id] = ev.target.open;
+  }, true);
+  app.addEventListener('change', function (ev) {
+    if (mode === 'console' && ev.target.id === 'wi-shrink') { C.wiShrink = parseFloat(ev.target.value); C.render(); }
+  });
+  app.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter' && mode === 'console' && /^mo-\d+$/.test(ev.target.id || '')) {
+      ev.preventDefault(); var btn = ev.target.closest('.manual').querySelector('[data-act="offer"]'); if (btn) btn.click();
+    }
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && mode === 'team' && T.team) T.keepAwake(); });
+
+  function boot() {
+    closeModal();
+    if (C.st) C.disconnect();
+    T.stop();
+    var hp = new URLSearchParams(location.hash.slice(1));
+    var s = (hp.get('s') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (s && !IN_VIEWER) { mode = 'team'; T.start(s, RT.norm(hp.get('db') || CFG.databaseURL)); return; }
+    if (hp.has('console')) { mode = 'console'; C.start(); return; }
+    if (hp.has('join') && !IN_VIEWER) { mode = 'team'; T.entry(); return; }
+    mode = ''; renderLanding();
+  }
+  window.addEventListener('hashchange', boot);
+  Theme.init();
+  boot();
+
+  /* exposed for automated checks */
+  window.ELA2 = { E: E, RT: RT, C: C, T: T, money: money, parseMoney: parseMoney, csvFor: csvFor };
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "ela2": {
+      "$session": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
