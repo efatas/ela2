@@ -919,7 +919,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   /* ------------------------------------------------------------------- landing */
   function renderLanding() {
-    var p = { pie: 500000, shrink: 10, rounds: 5, first: 'firm' };
+    var p = { pie: 500000, shrink: 10, rounds: 9, first: 'firm' };
     app.innerHTML =
       '<main class="wrap landing">' +
       '<header class="stack" style="gap:10px"><p class="eyebrow">Strategy · ELA #2 · Bargaining power</p>' +
@@ -982,7 +982,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         '<div class="grid2">' +
         '<label class="field">Surplus in round 1 ($)<input type="number" id="f-pie" min="10" step="1" value="5000" inputmode="numeric"></label>' +
         '<label class="field">Shrink per rejection (%)<input type="number" id="f-shrink" min="1" max="90" step="1" value="10" inputmode="numeric"></label>' +
-        '<label class="field">Rounds<input type="number" id="f-rounds" min="1" max="10" step="1" value="5" inputmode="numeric"></label>' +
+        '<label class="field">Rounds<input type="number" id="f-rounds" min="1" max="10" step="1" value="9" inputmode="numeric"></label>' +
         '</div>' +
         '<label class="field">Stakes line shown to students <span class="hint">Optional. For example: “Every $1,000 your team earns adds 0.1 to each member’s ELA mark.”</span><input type="text" id="f-stakes" maxlength="200"></label>' +
         '<p id="setupmsg" class="small" aria-live="polite"></p>' +

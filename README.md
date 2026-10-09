@@ -1,6 +1,6 @@
 # The Shrinking Contract · ELA #2
 
-Classroom bargaining game for Strategy, Unit 2. A Firm and its Supplier split a contract surplus of $5,000 that shrinks by 10% every time a proposal is rejected, over at most five rounds.
+Classroom bargaining game for Strategy, Unit 2. A Firm and its Supplier split a contract surplus of $5,000 that shrinks by 10% every time a proposal is rejected, over at most nine rounds (an odd number, so the Firm, which proposes first, also makes the last proposal). Rounds, surplus, shrink and the number of teams can be changed on the setup screen.
 
 The same page runs in two ways:
 
@@ -32,7 +32,7 @@ The free Spark plan is enough and asks for no card.
 1. On GitHub: **New repository**, name `ela2`, **Public**, **Create repository**.
 2. Click **uploading an existing file**, drag in the four files of this folder, and click **Commit changes**.
 3. Open `config.js` in the repository, click the pencil icon, paste the database address between the quotes, and click **Commit changes**.
-4. **Settings → Pages**. Under *Build and deployment* choose **Deploy from a branch**, branch **main**, folder **/(root)**, and **Save**. After a minute or two the page is live at `https://<your-github-user>.github.io/ela2/`.
+4. **Settings → Pages**. Under *Build and deployment* choose **Deploy from a branch**, branch **main**, folder **/(root)**, and **Save**. After a minute or two the page is live at `https://efatas.github.io/ela2/`.
 
 ### 3. Five-minute check
 
